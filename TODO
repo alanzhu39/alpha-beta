@@ -1,0 +1,146 @@
+TODO:
+- pose detection of arbitrary moonboard beta
+- overlay of two moonboard beta and their detected poses (one base video with pose detection, one shadow pose overlaid on top)
+  - this comes with a subgoal of being able to manipulate the videos so that the board positions and thus the holds overlay properly, so that the poses will also match properly
+- selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
+
+
+6/13/2024:
+In progress:
+- new Svelte app?
+- start doing state variables and stuff
+- select points flow
+- canvas perspective
+
+
+
+6/11/2024:
+In progress:
+- select points flow
+- can we get the video processing to be more performant?
+  - multithreading?
+  - GPU?
+  - can we lower the onseek time?
+- canvas perspective
+- maybe start actual app setup. will probably want to transition into an actual framework?
+- oh and also maybe try to get different canvas layers?
+  - since we want the poses to be on different layers so we can superimpose them in the different panels
+
+
+
+6/9/2024:
+In progress:
+- pursue sort of preprocessing step to aid in both performance and video scrubbing:
+  - so the idea is, we load the video at like 30 fps into a frame buffer within a canvas context
+  - during this loading, we also draw the pose detection for each frame
+  - then, after processing, we use a custom video-scrubber component to like detect which frame to display on the fly
+    - and that should be much faster than doing it live
+
+Done:
+- tested preprocessing and scrubbing with good results.
+  - this may be the way we want to go, but it does take a while to preprocess
+
+
+
+6/8/2024:
+In progress:
+- test video upload and pose detection flow
+  - we want to precompute all the poses for the video?
+  - play video and run detect video on each frame
+- webapp version
+  - video upload flow
+  - select video flow
+  - select points flow
+  - mediapipe detection
+  - drawing videos and pose references using canvas
+
+Done:
+- video upload and manipulation
+- prelim testing w JS mediapipe library
+  - prob want to use heavy model for best accuracy
+
+
+
+6/6/2024:
+In progress:
+- start web app version:
+  - start with mediapipe web impl tutorial
+  - ipad width, landscape
+  - side-by-side video playback
+    - video.js playback
+  - upload your beta video, select moonboard points
+  - select reference beta video, select moonboard points
+  - run ffmpeg on reference beta video to transform it to fit the same frame
+    - ffmpeg.wasm?
+    - maybe too slow
+    - html5 video + canvas
+  - run pose detection on both videos
+    - mediapipe
+  - overlay poses (using canvas?)
+    - mediapipe
+
+
+
+6/4/2024:
+In progress:
+ffmpeg filters:
+- adding border box: pad
+- cutting video: -ss
+- perspective of course
+
+
+
+5/28/2024:
+In progress:
+- ffmpeg filters
+- mediapipe web implementation? can leverage OpenGL ES on Android/Linux, and Metal on iOS?
+- video side-by-side mode
+  - using scrubbers for each video to sync beta videos
+- video texture mapping to align boards
+- overlay poses between videos
+
+- we know mapping of source -> dest moonboard corner points
+- then, using that linear interpolation, calculate the coordinates of the video corner points
+- finally, apply ffmpeg perspective filter
+
+sample flow:
+1. select a problem, choose a reference beta video
+  a. can we store on some server the video and pose detected positions? and then do overlay with the pose jsons?
+  b. should also already have alignment points defined
+2. upload user beta video
+3. select video alignment points
+4. align videos
+  a. might want to do this server-side with ffmpeg
+5. do pose detection on user beta video
+6. display videos with overlays
+
+
+
+5/22/2024:
+In progress:
+- mediapipe implementation with some sample videos
+- testing different CV libraries for rock climbing poses
+- openpose, openpifpaf, mediapipe
+	- two examples of previous work that I've seen seem to use mediapipe
+
+Done:
+- tested a couple different implementations using the mediapipe python API
+- actually the legacy solutions API seemed to perform the best, so that was weird?
+- lowkey switching up the color scheme to kinda help I think increase contrast between the person and the moonboard background might be something helpful?
+- there's still a lot of stuttering kinda stuff and flickering that makes it look kinda wonky sometimes, and the model also doesn't deal with the occlusion and hidden limbs well
+  - In the problem I tested there's often moments where an arm or leg is occluded cuz of like drop knees or just twisting hips/whatever, and the limb detection kinda freaks out in those moments
+- maybe want to see if a different model can do a better job handling that
+- also maybe want to see what the deal with the legacy solutions API is? is that an old model or what?
+- also discovered that the video mode is indeed better for videos lmao
+  - I didn't realize but I guess it makes sense
+  - my intuition at first was that the image mode might spend more time on each frame, while the video mode was doing some type of interpolation/trying to go faster to increase throughput
+  - but I think the video mode throughput is the same, and it just has the added benefit of seeeing the before and after frames and that helps smoothen out the posts throughout movements
+  - just doing images frame-by-frame makes it suuuper stuttery and jerky as they don't have context of the overall movement over time
+- overall pretty happy with progress today, but I think we still need to look for some improvements on the model detection
+
+Mediapipe:
+- this shit looks hella pop, and is supported by lots of google research
+- have web solution which I'm thinking of trying out (although maybe python for easier prototyping?)
+
+OpenPose notes:
+- uhh alright so spent like two hours trying to set up all these nvidia drivers and cuda shit, and it seems to be kinda working? but apparently mediapipe kinda just pops openpose?
