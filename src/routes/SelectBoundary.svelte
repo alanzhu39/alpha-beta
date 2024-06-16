@@ -7,12 +7,11 @@
 	export let videoSrc: string;
 	export let corners: Coordinate[] = [];
 
-	let videoRef: HTMLVideoElement | null = null;
-	let canvasRef: HTMLCanvasElement | null = null;
+	let videoRef: HTMLVideoElement;
+	let canvasRef: HTMLCanvasElement;
 	let currentCorner = 0;
 
 	const drawCorners = () => {
-		if (!canvasRef || !videoRef) return;
 		canvasRef.width = canvasRef.offsetWidth;
 		canvasRef.height = canvasRef.offsetHeight;
 		const videoWidth = videoRef.offsetWidth;
@@ -29,7 +28,6 @@
 	};
 
 	const onCanvasClick = (e: MouseEvent) => {
-		if (!canvasRef || !videoRef) return;
 		const videoWidth = videoRef.offsetWidth;
 		const videoHeight = videoRef.offsetHeight;
 		const rect = canvasRef.getBoundingClientRect();
