@@ -2,6 +2,7 @@
 	import SelectBoundary from './SelectBoundary.svelte';
 	import VideoScrubber from './VideoScrubber.svelte';
 	import VideoUpload from './VideoUpload.svelte';
+	import { userPerspective, type Coordinate } from './stores';
 
 	const STEPS = {
 		VIDEO_UPLOAD: 'videoUpload',
@@ -10,8 +11,8 @@
 	};
 
 	let currentStep = STEPS.VIDEO_UPLOAD;
-	let files: FileList;
 	let videoSrc = '';
+	let corners: Coordinate[];
 
 	const onVideoUpload = () => {
 		currentStep = STEPS.SELECT_BOUNDARY;
@@ -19,7 +20,8 @@
 
 	const onSelectedBoundary = () => {
 		currentStep = STEPS.DISPLAY;
-		// TODO: add boundary corners to store
+		// add boundary corners to store
+		$userPerspective = [corners[0], corners[1], corners[2], corners[3]];
 	};
 </script>
 
@@ -28,7 +30,7 @@
 		<VideoUpload bind:videoSrc nextStep={onVideoUpload} />
 	{/if}
 	{#if currentStep === STEPS.SELECT_BOUNDARY}
-		<SelectBoundary {videoSrc} nextStep />
+		<SelectBoundary {videoSrc} bind:corners nextStep={onSelectedBoundary} />
 	{/if}
 	{#if currentStep === STEPS.DISPLAY}
 		<VideoScrubber {videoSrc} />

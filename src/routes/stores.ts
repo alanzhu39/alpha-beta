@@ -1,9 +1,12 @@
 import { writable } from 'svelte/store';
 
-const userPerspective = writable(null);
-const userPose = writable(null);
+export type Coordinate = [number, number];
+export type Perspective = [Coordinate, Coordinate, Coordinate, Coordinate];
 
-const referencePerspective = writable(null);
-const referencePose = writable(null);
+const userPerspective = writable<Perspective>();
+const userPose = writable();
+
+const referencePerspective = writable<Perspective>();
+const referencePose = writable();
 
 export { userPerspective, userPose, referencePerspective, referencePose };

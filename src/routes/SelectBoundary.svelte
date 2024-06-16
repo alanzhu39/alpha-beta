@@ -1,9 +1,11 @@
 <script lang="ts">
+	import type { Coordinate } from './stores';
+
 	const CORNERS = ['Top left (18A)', 'Top right (18K)', 'Bottom right (1K)', 'Bottom left (1A)'];
 
 	export let nextStep;
 	export let videoSrc: string;
-	export let corners: number[][] = [];
+	export let corners: Coordinate[] = [];
 
 	let videoRef: HTMLVideoElement | null = null;
 	let canvasRef: HTMLCanvasElement | null = null;
