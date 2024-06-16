@@ -1,9 +1,4 @@
-// place files you want to import through the `$lib` alias in this folder.
-
 import type { Coordinate } from '../routes/stores';
-
-// Coordinate = tuple[float, float]
-// Coordinates = tuple[Coordinate, Coordinate, Coordinate, Coordinate]
 
 function distance(coord1: Coordinate, coord2: Coordinate) {
 	return Math.sqrt(Math.pow(coord1[0] - coord2[0], 2) + Math.pow(coord1[1] - coord2[1], 2));
