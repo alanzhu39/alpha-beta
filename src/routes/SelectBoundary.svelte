@@ -75,9 +75,9 @@
 			<div />
 		{/if}
 		{#if currentCorner < CORNERS.length - 1}
-			<button on:click={onNext}>Next</button>
+			<button on:click={onNext} disabled={corners[currentCorner] === undefined}>Next</button>
 		{:else}
-			<button on:click={onDone}>Done</button>
+			<button on:click={onDone} disabled={corners[currentCorner] === undefined}>Done</button>
 		{/if}
 	</div>
 </div>
