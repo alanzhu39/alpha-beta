@@ -1,5 +1,6 @@
 <script lang="ts">
 	import SelectBoundary from './SelectBoundary.svelte';
+	import VideoScrubber from './VideoScrubber.svelte';
 	import VideoUpload from './VideoUpload.svelte';
 
 	const STEPS = {
@@ -15,6 +16,11 @@
 	const onVideoUpload = () => {
 		currentStep = STEPS.SELECT_BOUNDARY;
 	};
+
+	const onSelectedBoundary = () => {
+		currentStep = STEPS.DISPLAY;
+		// TODO: add boundary corners to store
+	};
 </script>
 
 <div class="container">
@@ -22,7 +28,10 @@
 		<VideoUpload bind:videoSrc nextStep={onVideoUpload} />
 	{/if}
 	{#if currentStep === STEPS.SELECT_BOUNDARY}
-		<SelectBoundary {videoSrc} />
+		<SelectBoundary {videoSrc} nextStep />
+	{/if}
+	{#if currentStep === STEPS.DISPLAY}
+		<VideoScrubber {videoSrc} />
 	{/if}
 </div>
 

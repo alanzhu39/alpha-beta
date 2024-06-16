@@ -1,6 +1,7 @@
 <script lang="ts">
 	const CORNERS = ['Top left (18A)', 'Top right (18K)', 'Bottom right (1K)', 'Bottom left (1A)'];
 
+	export let nextStep;
 	export let videoSrc: string;
 	export let corners: number[][] = [];
 
@@ -48,7 +49,7 @@
 	};
 
 	const onDone = () => {
-		console.log('done');
+		nextStep();
 	};
 </script>
 
