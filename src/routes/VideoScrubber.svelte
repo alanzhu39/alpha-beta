@@ -9,13 +9,16 @@
 	// Or, just pass flag for which store you should be using?
 
 	let videoRef: HTMLVideoElement;
+	let videoDuration: number;
 	let canvasRef: HTMLCanvasElement;
 	let rangeRef: HTMLInputElement;
 	let isPlaying = false;
 
-	onMount(() => {
-		rangeRef.max = videoRef.duration.toString();
-	});
+	$: {
+		if (rangeRef && videoDuration) {
+			rangeRef.max = videoDuration.toString();
+		}
+	}
 
 	const onPlayClick = () => {
 		isPlaying = !isPlaying;
@@ -38,11 +41,11 @@
 		// Draw overlayPose
 	};
 
-	const onRangeChange = () => {
+	const onInput = () => {
 		videoRef.currentTime = parseFloat(rangeRef.value);
 	};
 
-	const onSeek = () => {
+	const onSeeked = () => {
 		const context = canvasRef.getContext('2d');
 		const canvasWidth = canvasRef.offsetWidth;
 		const canvasHeight = canvasRef.offsetHeight;
@@ -63,7 +66,7 @@
 		canvasRef.height = canvasHeight;
 
 		function step() {
-			if (!isPlaying || !context) return;
+			if (!isPlaying || videoRef.ended || !context) return;
 
 			drawFrame(context, canvasWidth, canvasHeight);
 
@@ -73,12 +76,24 @@
 
 		requestAnimationFrame(step);
 	};
+
+	const onTimeUpdate = () => {
+		rangeRef.value = videoRef.currentTime.toString();
+	};
 </script>
 
 <div class="container">
 	<!-- TODO: back button -->
 	<div class="video-container">
-		<video class="user-video" muted bind:this={videoRef} on:play={onPlay} on:seeked={onSeek}>
+		<video
+			class="user-video"
+			muted
+			bind:this={videoRef}
+			bind:duration={videoDuration}
+			on:play={onPlay}
+			on:seeked={onSeeked}
+			on:timeupdate={onTimeUpdate}
+		>
 			<source src={videoSrc} type="video/mp4" />
 		</video>
 		<canvas class="video-canvas" id="video-canvas" bind:this={canvasRef} />
@@ -89,7 +104,7 @@
 		{:else}
 			<button on:click={onPlayClick}>Play</button>
 		{/if}
-		<input type="range" step="0.03" bind:this={rangeRef} on:change={onRangeChange} />
+		<input type="range" step="0.03" value="0" bind:this={rangeRef} on:input={onInput} />
 	</div>
 </div>
 
@@ -126,7 +141,7 @@
 	.controls-container {
 		padding: 10px;
 		display: grid;
-		grid-template-columns: 1fr auto;
+		grid-template-columns: auto 1fr;
 		gap: 10px;
 		text-align: center;
 		align-items: center;
