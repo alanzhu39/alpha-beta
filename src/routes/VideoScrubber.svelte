@@ -2,9 +2,9 @@
 	import { onMount } from 'svelte';
 
 	export let videoSrc: string;
-	export let perspectiveTransform;
-	export let overlayPose;
-	export let poseStore;
+	// export let perspectiveTransform;
+	// export let overlayPose;
+	// export let poseStore;
 
 	// Or, just pass flag for which store you should be using?
 
@@ -27,10 +27,19 @@
 		videoRef.pause();
 	};
 
-	const drawFrame = () => {
+	const drawFrame = (
+		context: CanvasRenderingContext2D,
+		canvasWidth: number,
+		canvasHeight: number
+	) => {
 		// Draw video
+		context.drawImage(videoRef, 0, 0, canvasWidth, canvasHeight);
 		// Detect pose and update poseStore
 		// Draw overlayPose
+	};
+
+	const onRangeChange = () => {
+		videoRef.currentTime = parseFloat(rangeRef.value);
 	};
 
 	const onSeek = () => {
@@ -41,7 +50,7 @@
 		canvasRef.height = canvasHeight;
 		if (!context) return;
 
-		context.drawImage(videoRef, 0, 0, canvasWidth, canvasHeight);
+		drawFrame(context, canvasWidth, canvasHeight);
 
 		// TODO: pose detection
 	};
@@ -53,17 +62,26 @@
 		canvasRef.width = canvasWidth;
 		canvasRef.height = canvasHeight;
 
-		if (!context) return;
+		function step() {
+			if (!isPlaying || !context) return;
+
+			drawFrame(context, canvasWidth, canvasHeight);
+
+			// TODO: pose detection
+			requestAnimationFrame(step);
+		}
+
+		requestAnimationFrame(step);
 	};
 </script>
 
 <div class="container">
 	<!-- TODO: back button -->
 	<div class="video-container">
-		<video class="user-video" muted bind:this={videoRef}>
+		<video class="user-video" muted bind:this={videoRef} on:play={onPlay} on:seeked={onSeek}>
 			<source src={videoSrc} type="video/mp4" />
 		</video>
-		<canvas class="video-canvas" id="video-canvas" bind:this={canvasRef} on:click={onPlay} />
+		<canvas class="video-canvas" id="video-canvas" bind:this={canvasRef} />
 	</div>
 	<div class="controls-container">
 		{#if isPlaying}
@@ -71,7 +89,7 @@
 		{:else}
 			<button on:click={onPlayClick}>Play</button>
 		{/if}
-		<input type="range" step="0.03" bind:this={rangeRef} />
+		<input type="range" step="0.03" bind:this={rangeRef} on:change={onRangeChange} />
 	</div>
 </div>
 
