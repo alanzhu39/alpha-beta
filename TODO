@@ -5,6 +5,24 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 
+6/15/2024:
+In progress:
+- starting svelte components
+- Layout
+  - 
+
+Svelte notes:
+- the unit for reactivity is variables
+- the catalyst for reactivity is reassignment of state variables
+- $ reactive statements are kinda like effects?
+  - they get ran if any of the variables they depend on are reassigned
+  - basically like useEffect and its dependencies
+- stores: like context in React
+  - store values can be referenced by prefixing their variables with $ actually!
+  - can directly read/assign to these $variables
+
+
+
 6/13/2024:
 In progress:
 - new Svelte app?
