@@ -5,6 +5,21 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 
+6/16/2024:
+In progress:
+- TODO: add pose detection (mediapipe vision npm package. has TS support! thank god)
+
+Done:
+- making video scrubber work
+  - adding scrubber range input
+  - adding event listeners to render frames
+- updating boundary selection flow
+- port over transform calculation
+- add perspectivets for rendering perspective transformations on canvas
+- doing a shit ton of patches to make that shit work
+
+
+
 6/15/2024:
 In progress:
 - starting svelte components
