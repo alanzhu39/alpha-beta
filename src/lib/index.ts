@@ -70,42 +70,42 @@ export function calculateTransform(
 	// Calculate intersections i1-8
 	// c1 1 2 c2
 	// 8  A B 3
-	// 7  C D 4
-	// c3 6 5 c4
+	// 7  D C 4
+	// c4 6 5 c3
 	let [calcY] = makeLine(sa, sb);
 	const i8 = [0, calcY(0)] as Coordinate;
 	const i3 = [1, calcY(1)] as Coordinate;
 	[calcY] = makeLine(sc, sd);
 	const i7 = [0, calcY(0)] as Coordinate;
 	const i4 = [1, calcY(1)] as Coordinate;
-	let [_, calcX] = makeLine(sa, sc);
+	let [_, calcX] = makeLine(sa, sd);
 	const i1 = [calcX(0), 0] as Coordinate;
 	const i6 = [calcX(1), 1] as Coordinate;
-	[_, calcX] = makeLine(sb, sd);
+	[_, calcX] = makeLine(sb, sc);
 	const i2 = [calcX(0), 0] as Coordinate;
 	const i5 = [calcX(1), 1] as Coordinate;
 
 	// Calculate dest coordinate representations for i1-8
 	// const intersections = [
 	//   [i8, a, b, i3],
-	//   [i7, c, d, i4],
-	//   [i1, a, c, i6],
-	//   [i2, b, d, i5]
+	//   [i7, d, c, i4],
+	//   [i1, a, d, i6],
+	//   [i2, b, c, i5]
 	// ]
 	const d8 = calculateIntersectionDest(b, a, i8);
 	const d3 = calculateIntersectionDest(a, b, i3);
-	const d7 = calculateIntersectionDest(d, c, i7);
-	const d4 = calculateIntersectionDest(c, d, i4);
-	const d1 = calculateIntersectionDest(c, a, i1);
-	const d6 = calculateIntersectionDest(a, c, i6);
-	const d2 = calculateIntersectionDest(d, b, i2);
-	const d5 = calculateIntersectionDest(b, d, i5);
+	const d7 = calculateIntersectionDest(c, d, i7);
+	const d4 = calculateIntersectionDest(d, c, i4);
+	const d1 = calculateIntersectionDest(d, a, i1);
+	const d6 = calculateIntersectionDest(a, d, i6);
+	const d2 = calculateIntersectionDest(c, b, i2);
+	const d5 = calculateIntersectionDest(b, c, i5);
 
 	// Calculate dest corners using intersection dest representations
 	const c1 = calculateLineIntersection([d1, d2], [d7, d8]);
 	const c2 = calculateLineIntersection([d1, d2], [d3, d4]);
-	const c3 = calculateLineIntersection([d5, d6], [d7, d8]);
-	const c4 = calculateLineIntersection([d5, d6], [d3, d4]);
+	const c3 = calculateLineIntersection([d5, d6], [d3, d4]);
+	const c4 = calculateLineIntersection([d5, d6], [d7, d8]);
 	return [c1, c2, c3, c4];
 }
 
@@ -113,14 +113,14 @@ function test() {
 	const source_coords = [
 		[0.1, 0.062],
 		[0.811, 0],
-		[0.256, 0.842],
-		[0.816, 0.828]
+		[0.816, 0.828],
+		[0.256, 0.842]
 	] as Perspective;
 	const dest_coords = [
 		[0.2, 0.2],
 		[0.8, 0.2],
-		[0.2, 0.8],
-		[0.8, 0.8]
+		[0.8, 0.8],
+		[0.2, 0.8]
 	] as Perspective;
 	console.log(calculateTransform(source_coords, dest_coords));
 }

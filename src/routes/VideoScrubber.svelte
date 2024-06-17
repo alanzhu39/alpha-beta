@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Perspective } from './stores';
+	import { referencePerspective, userPerspective } from './stores';
 	import { default as PerspectiveTransform } from 'perspectivets';
 
 	export let videoSrc: string;
@@ -33,15 +34,18 @@
 
 	const drawFrame = (
 		context: CanvasRenderingContext2D,
-		canvasWidth: number,
-		canvasHeight: number
+		videoWidth: number,
+		videoHeight: number
 	) => {
 		// Draw video
 		if (!perspectiveTransform) {
-			context.drawImage(videoRef, 0, 0, canvasWidth, canvasHeight);
+			context.drawImage(videoRef, 0, 0, videoWidth, videoHeight);
 		} else {
 			const p = new PerspectiveTransform(context, videoRef);
-			const [topLeft, topRight, bottomRight, bottomLeft] = perspectiveTransform;
+			const [topLeft, topRight, bottomRight, bottomLeft] = perspectiveTransform.map(([x, y]) => [
+				x * videoWidth,
+				y * videoHeight
+			]);
 			const [topLeftX, topLeftY] = topLeft;
 			const [topRightX, topRightY] = topRight;
 			const [bottomRightX, bottomRightY] = bottomRight;
@@ -71,9 +75,11 @@
 		const canvasHeight = canvasRef.offsetHeight;
 		canvasRef.width = canvasWidth;
 		canvasRef.height = canvasHeight;
+		const videoWidth = videoRef.offsetWidth;
+		const videoHeight = videoRef.offsetHeight;
 		if (!context) return;
 
-		drawFrame(context, canvasWidth, canvasHeight);
+		drawFrame(context, videoWidth, videoHeight);
 
 		// TODO: pose detection
 	};
@@ -84,11 +90,13 @@
 		const canvasHeight = canvasRef.offsetHeight;
 		canvasRef.width = canvasWidth;
 		canvasRef.height = canvasHeight;
+		const videoWidth = videoRef.offsetWidth;
+		const videoHeight = videoRef.offsetHeight;
 
 		function step() {
 			if (!isPlaying || videoRef.ended || !context) return;
 
-			drawFrame(context, canvasWidth, canvasHeight);
+			drawFrame(context, videoWidth, videoHeight);
 
 			// TODO: pose detection
 			requestAnimationFrame(step);

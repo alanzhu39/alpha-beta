@@ -11,3 +11,45 @@ index 4f2fca6..8c38294 100644
      draw(q: Quadrilateral): void;
      private create_canvas_context;
      private _applyMask;
+diff --git a/node_modules/perspectivets/build/index.es.js b/node_modules/perspectivets/build/index.es.js
+index e8d9a62..f0caa7c 100644
+--- a/node_modules/perspectivets/build/index.es.js
++++ b/node_modules/perspectivets/build/index.es.js
+@@ -24,13 +24,13 @@ var Perspective = /** @class */ (function () {
+         if (!ctxd || !ctxd.strokeStyle) {
+             return;
+         }
+-        if (!image || !image.width || !image.height) {
++        if (!image || !image.offsetWidth || !image.offsetHeight) {
+             return;
+         }
+         // prepare a <canvas> for the image
+         var cvso = document.createElement("canvas");
+-        cvso.width = Math.round(image.width);
+-        cvso.height = Math.round(image.height);
++        cvso.width = Math.round(image.offsetHeight);
++        cvso.height = Math.round(image.offsetHeight);
+         var ctxo = cvso.getContext("2d");
+         ctxo.drawImage(image, 0, 0, cvso.width, cvso.height);
+         // prepare a <canvas> for the transformed image
+diff --git a/node_modules/perspectivets/build/index.js b/node_modules/perspectivets/build/index.js
+index 6e61b4c..0780f10 100644
+--- a/node_modules/perspectivets/build/index.js
++++ b/node_modules/perspectivets/build/index.js
+@@ -28,13 +28,13 @@ var Perspective = /** @class */ (function () {
+         if (!ctxd || !ctxd.strokeStyle) {
+             return;
+         }
+-        if (!image || !image.width || !image.height) {
++        if (!image || !image.offsetWidth || !image.offsetHeight) {
+             return;
+         }
+         // prepare a <canvas> for the image
+         var cvso = document.createElement("canvas");
+-        cvso.width = Math.round(image.width);
+-        cvso.height = Math.round(image.height);
++        cvso.width = Math.round(image.offsetWidth);
++        cvso.height = Math.round(image.offsetHeight);
+         var ctxo = cvso.getContext("2d");
+         ctxo.drawImage(image, 0, 0, cvso.width, cvso.height);
+         // prepare a <canvas> for the transformed image

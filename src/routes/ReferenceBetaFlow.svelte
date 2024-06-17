@@ -23,7 +23,7 @@
 
 	$: {
 		if ($referencePerspective && $userPerspective) {
-			perspectiveTransform = calculateTransform($userPerspective, $referencePerspective);
+			perspectiveTransform = calculateTransform($referencePerspective, $userPerspective);
 		}
 	}
 
