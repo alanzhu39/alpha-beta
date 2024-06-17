@@ -36,6 +36,10 @@
 		// add boundary corners to store
 		$referencePerspective = [corners[0], corners[1], corners[2], corners[3]];
 	};
+
+	const onScrubberBack = () => {
+		currentStep = STEPS.SELECT_BOUNDARY;
+	};
 </script>
 
 <div class="container">
@@ -46,7 +50,7 @@
 		<SelectBoundary {videoSrc} bind:corners nextStep={onSelectedBoundary} />
 	{/if}
 	{#if currentStep === STEPS.DISPLAY}
-		<VideoScrubber {videoSrc} {perspectiveTransform} />
+		<VideoScrubber {videoSrc} {perspectiveTransform} backStep={onScrubberBack} />
 	{/if}
 </div>
 

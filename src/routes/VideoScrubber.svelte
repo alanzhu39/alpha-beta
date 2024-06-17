@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Perspective } from './stores';
-	import { referencePerspective, userPerspective } from './stores';
 	import { default as PerspectiveTransform } from 'perspectivets';
 
+	export let backStep;
 	export let videoSrc: string;
 	export let perspectiveTransform: Perspective | null = null;
 	// export let overlayPose;
@@ -41,6 +41,7 @@
 		if (!perspectiveTransform) {
 			context.drawImage(videoRef, 0, 0, videoWidth, videoHeight);
 		} else {
+			context.fillRect(0, 0, videoWidth, videoHeight);
 			const p = new PerspectiveTransform(context, videoRef);
 			const [topLeft, topRight, bottomRight, bottomLeft] = perspectiveTransform.map(([x, y]) => [
 				x * videoWidth,
@@ -111,6 +112,7 @@
 </script>
 
 <div class="container">
+	<button class="back-button" on:click={backStep}>Back</button>
 	<!-- TODO: back button -->
 	<div class="video-container">
 		<video
@@ -141,6 +143,11 @@
 		display: grid;
 		grid-template-rows: minmax(0, 1fr) auto;
 		height: 100%;
+		position: relative;
+	}
+
+	.back-button {
+		position: absolute;
 	}
 
 	.video-container {

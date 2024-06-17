@@ -12,7 +12,7 @@ index 4f2fca6..8c38294 100644
      private create_canvas_context;
      private _applyMask;
 diff --git a/node_modules/perspectivets/build/index.es.js b/node_modules/perspectivets/build/index.es.js
-index e8d9a62..f0caa7c 100644
+index e8d9a62..6e55943 100644
 --- a/node_modules/perspectivets/build/index.es.js
 +++ b/node_modules/perspectivets/build/index.es.js
 @@ -24,13 +24,13 @@ var Perspective = /** @class */ (function () {
@@ -32,6 +32,16 @@ index e8d9a62..f0caa7c 100644
          var ctxo = cvso.getContext("2d");
          ctxo.drawImage(image, 0, 0, cvso.width, cvso.height);
          // prepare a <canvas> for the transformed image
+@@ -138,8 +138,8 @@ var Perspective = /** @class */ (function () {
+         }
+         // set a clipping path and draw the transformed image on the destination canvas.
+         this.ctxd.save();
++        this._applyMask(this.ctxt, q);
+         this.ctxd.drawImage(ctxt.canvas, 0, 0);
+-        this._applyMask(this.ctxd, q);
+         this.ctxd.restore();
+     };
+     Perspective.prototype.create_canvas_context = function (w, h) {
 diff --git a/node_modules/perspectivets/build/index.js b/node_modules/perspectivets/build/index.js
 index 6e61b4c..0780f10 100644
 --- a/node_modules/perspectivets/build/index.js
