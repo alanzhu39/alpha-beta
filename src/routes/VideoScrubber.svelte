@@ -41,6 +41,21 @@
 			context.drawImage(videoRef, 0, 0, canvasWidth, canvasHeight);
 		} else {
 			const p = new PerspectiveTransform(context, videoRef);
+			const [topLeft, topRight, bottomRight, bottomLeft] = perspectiveTransform;
+			const [topLeftX, topLeftY] = topLeft;
+			const [topRightX, topRightY] = topRight;
+			const [bottomRightX, bottomRightY] = bottomRight;
+			const [bottomLeftX, bottomLeftY] = bottomLeft;
+			p.draw({
+				topLeftX,
+				topLeftY,
+				topRightX,
+				topRightY,
+				bottomRightX,
+				bottomRightY,
+				bottomLeftX,
+				bottomLeftY
+			});
 		}
 		// Detect pose and update poseStore
 		// Draw overlayPose
