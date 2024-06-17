@@ -75,7 +75,7 @@ export function calculateTransform(
 	let [calcY] = makeLine(sa, sb);
 	const i8 = [0, calcY(0)] as Coordinate;
 	const i3 = [1, calcY(1)] as Coordinate;
-	[calcY] = makeLine(sa, sb);
+	[calcY] = makeLine(sc, sd);
 	const i7 = [0, calcY(0)] as Coordinate;
 	const i4 = [1, calcY(1)] as Coordinate;
 	let [_, calcX] = makeLine(sa, sc);
@@ -107,4 +107,20 @@ export function calculateTransform(
 	const c3 = calculateLineIntersection([d5, d6], [d7, d8]);
 	const c4 = calculateLineIntersection([d5, d6], [d3, d4]);
 	return [c1, c2, c3, c4];
+}
+
+function test() {
+	const source_coords = [
+		[0.1, 0.062],
+		[0.811, 0],
+		[0.256, 0.842],
+		[0.816, 0.828]
+	] as Perspective;
+	const dest_coords = [
+		[0.2, 0.2],
+		[0.8, 0.2],
+		[0.2, 0.8],
+		[0.8, 0.8]
+	] as Perspective;
+	console.log(calculateTransform(source_coords, dest_coords));
 }
