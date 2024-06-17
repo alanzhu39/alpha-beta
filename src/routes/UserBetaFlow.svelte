@@ -26,6 +26,7 @@
 
 	const onScrubberBack = () => {
 		currentStep = STEPS.SELECT_BOUNDARY;
+		corners = [];
 	};
 </script>
 

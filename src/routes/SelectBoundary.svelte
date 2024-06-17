@@ -64,11 +64,7 @@
 	<!-- Instructions -->
 	<div class="instructions-container">
 		<span>Select each corner hold of the MoonBoard.</span>
-		<span>
-			{#if currentCorner < CORNERS.length - 1}
-				Now selecting: <b>{CORNERS[currentCorner]}</b>
-			{/if}
-		</span>
+		<span>Now selecting: <b>{CORNERS[currentCorner]}</b></span>
 		{#if currentCorner > 0}
 			<button on:click={onBack}>Back</button>
 		{:else}
