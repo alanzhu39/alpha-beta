@@ -1,0 +1,13 @@
+diff --git a/node_modules/perspectivets/build/index.d.ts b/node_modules/perspectivets/build/index.d.ts
+index 4f2fca6..8c38294 100644
+--- a/node_modules/perspectivets/build/index.d.ts
++++ b/node_modules/perspectivets/build/index.d.ts
+@@ -33,7 +33,7 @@ export default class Perspective {
+     private cvso;
+     private ctxo;
+     private ctxt;
+-    constructor(ctxd: CanvasRenderingContext2D, image: HTMLImageElement);
++    constructor(ctxd: CanvasRenderingContext2D, image: HTMLImageElement | HTMLVideoElement);
+     draw(q: Quadrilateral): void;
+     private create_canvas_context;
+     private _applyMask;
