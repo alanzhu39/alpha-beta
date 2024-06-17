@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import type { Perspective } from './stores';
+	import { default as PerspectiveTransform } from 'perspectivets';
 
 	export let videoSrc: string;
-	// export let perspectiveTransform;
+	export let perspectiveTransform: Perspective | null = null;
 	// export let overlayPose;
 	// export let poseStore;
 
@@ -36,7 +37,11 @@
 		canvasHeight: number
 	) => {
 		// Draw video
-		context.drawImage(videoRef, 0, 0, canvasWidth, canvasHeight);
+		if (!perspectiveTransform) {
+			context.drawImage(videoRef, 0, 0, canvasWidth, canvasHeight);
+		} else {
+			const p = new PerspectiveTransform(context, videoRef);
+		}
 		// Detect pose and update poseStore
 		// Draw overlayPose
 	};

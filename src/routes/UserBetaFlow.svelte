@@ -3,7 +3,6 @@
 	import VideoScrubber from './VideoScrubber.svelte';
 	import VideoUpload from './VideoUpload.svelte';
 	import { userPerspective, type Coordinate } from './stores';
-	import { calculateTransform } from '$lib';
 
 	const STEPS = {
 		VIDEO_UPLOAD: 'videoUpload',
