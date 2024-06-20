@@ -14,7 +14,8 @@
 
 	let videoRef: HTMLVideoElement;
 	let videoDuration: number;
-	let canvasRef: HTMLCanvasElement;
+	let detectionCanvasRef: HTMLCanvasElement;
+	let displayCanvasRef: HTMLCanvasElement;
 	let rangeRef: HTMLInputElement;
 	let isPlaying = false;
 
@@ -26,10 +27,10 @@
 			baseOptions: {
 				// modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task'
 				modelAssetPath:
-					'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task'
-				// delegate: 'GPU'
+					'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task',
+				delegate: 'GPU'
 			},
-			// canvas: canvasRef,
+			canvas: detectionCanvasRef,
 			numPoses: 1,
 			runningMode: 'VIDEO'
 		});
@@ -107,26 +108,24 @@
 	};
 
 	const onSeeked = () => {
-		const context = canvasRef.getContext('2d');
-		const canvasWidth = canvasRef.offsetWidth;
-		const canvasHeight = canvasRef.offsetHeight;
-		canvasRef.width = canvasWidth;
-		canvasRef.height = canvasHeight;
+		const context = displayCanvasRef.getContext('2d');
+		const canvasWidth = displayCanvasRef.offsetWidth;
+		const canvasHeight = displayCanvasRef.offsetHeight;
+		displayCanvasRef.width = canvasWidth;
+		displayCanvasRef.height = canvasHeight;
 		const videoWidth = videoRef.offsetWidth;
 		const videoHeight = videoRef.offsetHeight;
 		if (!context) return;
 
 		drawFrame(context, videoWidth, videoHeight);
-
-		// TODO: pose detection
 	};
 
 	const onPlay = () => {
-		const context = canvasRef.getContext('2d');
-		const canvasWidth = canvasRef.offsetWidth;
-		const canvasHeight = canvasRef.offsetHeight;
-		canvasRef.width = canvasWidth;
-		canvasRef.height = canvasHeight;
+		const context = displayCanvasRef.getContext('2d');
+		const canvasWidth = displayCanvasRef.offsetWidth;
+		const canvasHeight = displayCanvasRef.offsetHeight;
+		displayCanvasRef.width = canvasWidth;
+		displayCanvasRef.height = canvasHeight;
 		const videoWidth = videoRef.offsetWidth;
 		const videoHeight = videoRef.offsetHeight;
 
@@ -142,7 +141,6 @@
 
 			drawFrame(context, videoWidth, videoHeight);
 
-			// TODO: pose detection
 			requestAnimationFrame(() => step(count + 1));
 		}
 
@@ -169,7 +167,8 @@
 		>
 			<source src={videoSrc} type="video/mp4" />
 		</video>
-		<canvas class="video-canvas" id="video-canvas" bind:this={canvasRef} />
+		<canvas class="detection-canvas" bind:this={detectionCanvasRef} />
+		<canvas class="display-canvas" bind:this={displayCanvasRef} />
 	</div>
 	<div class="controls-container">
 		{#if isPlaying}
@@ -206,7 +205,17 @@
 		max-height: 100%;
 	}
 
-	.video-canvas {
+	.detection-canvas {
+		position: absolute;
+		z-index: -1;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 100%;
+		height: 100%;
+	}
+
+	.display-canvas {
 		position: absolute;
 		z-index: 1;
 		top: 0;

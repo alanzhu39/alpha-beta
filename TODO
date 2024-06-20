@@ -15,6 +15,9 @@ some performance investigations:
 - FPS with just copying image onto canvas is hella fast: 60fps which is basically just what the video was taken at
 - FPS with pose detection drops to about 10fps
 - can GPU make it faster?
+- alright so switched to GPU delegation to a detection canvas (it looks like it just needs the WebGL2 rendering context to activate the GPU or something?)
+- but yeah then just rendered the detected landmark using the normal 2d context for drawing utils and it still worked
+- and best part is we got free 2x fps speedup! went up to 20fps
 
 
 
