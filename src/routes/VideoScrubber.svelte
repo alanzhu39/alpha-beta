@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { Perspective } from './stores';
 	import { default as PerspectiveTransform } from 'perspectivets';
+	import { DrawingUtils, FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 
 	export let backStep;
 	export let videoSrc: string;
@@ -15,6 +17,23 @@
 	let canvasRef: HTMLCanvasElement;
 	let rangeRef: HTMLInputElement;
 	let isPlaying = false;
+
+	let poseLandmarker: PoseLandmarker;
+
+	onMount(async () => {
+		const vision = await FilesetResolver.forVisionTasks('@mediapipe/tasks-vision/wasm');
+		poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+			baseOptions: {
+				// modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task'
+				modelAssetPath:
+					'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task'
+				// delegate: 'GPU'
+			},
+			// canvas: canvasRef,
+			numPoses: 1,
+			runningMode: 'VIDEO'
+		});
+	});
 
 	$: {
 		if (rangeRef && videoDuration) {
@@ -62,8 +81,25 @@
 				bottomLeftY
 			});
 		}
-		// Detect pose and update poseStore
-		// Draw overlayPose
+
+		// Detect pose
+		const drawingUtils = new DrawingUtils(context);
+		poseLandmarker.detectForVideo(videoRef, performance.now(), (result) => {
+			context.save();
+			for (const landmark of result.landmarks) {
+				drawingUtils.drawLandmarks(landmark, {
+					lineWidth: 2,
+					radius: 2
+				});
+				drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, {
+					lineWidth: 2
+				});
+			}
+			context.restore();
+		});
+
+		// TODO: update poseStore
+		// TODO: Draw overlayPose
 	};
 
 	const onInput = () => {
@@ -94,16 +130,23 @@
 		const videoWidth = videoRef.offsetWidth;
 		const videoHeight = videoRef.offsetHeight;
 
-		function step() {
-			if (!isPlaying || videoRef.ended || !context) return;
+		const start = performance.now();
+
+		function step(count: number) {
+			if (!isPlaying || videoRef.ended || !context) {
+				console.log(`frames: ${count}`);
+				console.log(`time: ${performance.now() - start}ms`);
+				console.log(`fps: ${count / ((performance.now() - start) / 1000)}`);
+				return;
+			}
 
 			drawFrame(context, videoWidth, videoHeight);
 
 			// TODO: pose detection
-			requestAnimationFrame(step);
+			requestAnimationFrame(() => step(count + 1));
 		}
 
-		requestAnimationFrame(step);
+		requestAnimationFrame(() => step(0));
 	};
 
 	const onTimeUpdate = () => {

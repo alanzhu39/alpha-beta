@@ -5,9 +5,21 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 
-6/16/2024:
+6/19/2024:
 In progress:
 - TODO: add pose detection (mediapipe vision npm package. has TS support! thank god)
+- do searching from moonboard video database
+
+some performance investigations:
+- hooked up mediapipe and it works pretty much first try!
+- FPS with just copying image onto canvas is hella fast: 60fps which is basically just what the video was taken at
+- FPS with pose detection drops to about 10fps
+- can GPU make it faster?
+
+
+
+6/16/2024:
+In progress:
 
 Done:
 - making video scrubber work
