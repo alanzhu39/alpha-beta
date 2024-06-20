@@ -10,8 +10,10 @@
 </script>
 
 <div class="container">
-	<label for="video-input" class="video-label">Upload</label>
-	<input type="file" id="video-input" class="video-input" on:change={onChange} />
+	<label class="video-label">
+		Upload
+		<input type="file" class="video-input" on:change={onChange} />
+	</label>
 </div>
 
 <style>
