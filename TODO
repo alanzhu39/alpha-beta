@@ -5,6 +5,15 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 
+6/21/2024:
+In progress:
+- moonboard api investigation:
+    POST https://www.moonboard.com/Video/GetVideos
+    form data: sort=&page=1&pageSize=8&group=&filter=Grade~eq~'6B%2B'
+  - not sure if we need auth on this?
+
+
+
 6/19/2024:
 In progress:
 - TODO: add pose detection (mediapipe vision npm package. has TS support! thank god)
