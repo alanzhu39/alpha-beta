@@ -5,9 +5,9 @@
 	import VideoUpload from './VideoUpload.svelte';
 	import {
 		referencePerspective,
+		referenceTransform,
 		userPerspective,
-		type Coordinate,
-		type Perspective
+		type Coordinate
 	} from './stores';
 
 	const STEPS = {
@@ -19,11 +19,10 @@
 	let currentStep = STEPS.VIDEO_UPLOAD;
 	let videoSrc = '';
 	let corners: Coordinate[];
-	let perspectiveTransform: Perspective;
 
 	$: {
 		if ($referencePerspective && $userPerspective) {
-			perspectiveTransform = calculateTransform($referencePerspective, $userPerspective);
+			$referenceTransform = calculateTransform($referencePerspective, $userPerspective);
 		}
 	}
 
@@ -51,7 +50,7 @@
 		<SelectBoundary {videoSrc} bind:corners nextStep={onSelectedBoundary} />
 	{/if}
 	{#if currentStep === STEPS.DISPLAY}
-		<VideoScrubber {videoSrc} {perspectiveTransform} backStep={onScrubberBack} />
+		<VideoScrubber {videoSrc} backStep={onScrubberBack} />
 	{/if}
 </div>
 

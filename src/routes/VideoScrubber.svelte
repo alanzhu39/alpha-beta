@@ -1,16 +1,23 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { Perspective } from './stores';
 	import { default as PerspectiveTransform } from 'perspectivets';
-	import { DrawingUtils, FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
+	import {
+		DrawingUtils,
+		FilesetResolver,
+		PoseLandmarker,
+		type NormalizedLandmark
+	} from '@mediapipe/tasks-vision';
+	import {
+		referencePose,
+		referencePoseColor,
+		referenceTransform,
+		userPose,
+		userPoseColor
+	} from './stores';
 
 	export let backStep;
 	export let videoSrc: string;
-	export let perspectiveTransform: Perspective | null = null;
-	// export let overlayPose;
-	// export let poseStore;
-
-	// Or, just pass flag for which store you should be using?
+	export let isReference: boolean = false;
 
 	let videoRef: HTMLVideoElement;
 	let videoDuration: number;
@@ -57,50 +64,99 @@
 		videoWidth: number,
 		videoHeight: number
 	) => {
-		// Draw video
-		if (!perspectiveTransform) {
-			context.drawImage(videoRef, 0, 0, videoWidth, videoHeight);
+		if (isReference) {
+			drawFrameAsReference(context, videoWidth, videoHeight);
 		} else {
-			context.fillRect(0, 0, videoWidth, videoHeight);
-			const p = new PerspectiveTransform(context, videoRef);
-			const [topLeft, topRight, bottomRight, bottomLeft] = perspectiveTransform.map(([x, y]) => [
-				x * videoWidth,
-				y * videoHeight
-			]);
-			const [topLeftX, topLeftY] = topLeft;
-			const [topRightX, topRightY] = topRight;
-			const [bottomRightX, bottomRightY] = bottomRight;
-			const [bottomLeftX, bottomLeftY] = bottomLeft;
-			p.draw({
-				topLeftX,
-				topLeftY,
-				topRightX,
-				topRightY,
-				bottomRightX,
-				bottomRightY,
-				bottomLeftX,
-				bottomLeftY
-			});
+			drawFrameAsUser(context, videoWidth, videoHeight);
 		}
+	};
+
+	const drawLandmark = (
+		drawingUtils: DrawingUtils,
+		landmark: NormalizedLandmark[],
+		color: string
+	) => {
+		drawingUtils.drawLandmarks(landmark, {
+			lineWidth: 2,
+			radius: 2,
+			color
+		});
+		drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, {
+			lineWidth: 2,
+			color
+		});
+	};
+
+	const drawFrameAsUser = (
+		context: CanvasRenderingContext2D,
+		videoWidth: number,
+		videoHeight: number
+	) => {
+		// Just draw the frame
+		context.drawImage(videoRef, 0, 0, videoWidth, videoHeight);
 
 		// Detect pose
 		const drawingUtils = new DrawingUtils(context);
 		poseLandmarker.detectForVideo(videoRef, performance.now(), (result) => {
 			context.save();
 			for (const landmark of result.landmarks) {
-				drawingUtils.drawLandmarks(landmark, {
-					lineWidth: 2,
-					radius: 2
-				});
-				drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, {
-					lineWidth: 2
-				});
+				// Draw user pose
+				drawLandmark(drawingUtils, landmark, $userPoseColor);
+
+				// Draw overlay pose
+				drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
+
+				// update poseStore
+				$userPose = landmark;
+			}
+			context.restore();
+		});
+	};
+
+	const drawFrameAsReference = (
+		context: CanvasRenderingContext2D,
+		videoWidth: number,
+		videoHeight: number
+	) => {
+		// Draw frame with perspective shift
+		context.fillRect(0, 0, videoWidth, videoHeight);
+
+		// Detect pose
+		const drawingUtils = new DrawingUtils(context);
+		poseLandmarker.detectForVideo(videoRef, performance.now(), (result) => {
+			context.save();
+			for (const landmark of result.landmarks) {
+				// Draw user pose
+				drawLandmark(drawingUtils, landmark, $referencePoseColor);
+
+				// Draw overlay pose
+				drawLandmark(drawingUtils, $userPose, $userPoseColor);
+
+				// update poseStore
+				$referencePose = landmark;
 			}
 			context.restore();
 		});
 
-		// TODO: update poseStore
-		// TODO: Draw overlayPose
+		const p = new PerspectiveTransform(context, displayCanvasRef);
+		const [topLeft, topRight, bottomRight, bottomLeft] = $referenceTransform.map(([x, y]) => [
+			x * videoWidth,
+			y * videoHeight
+		]);
+		const [topLeftX, topLeftY] = topLeft;
+		const [topRightX, topRightY] = topRight;
+		const [bottomRightX, bottomRightY] = bottomRight;
+		const [bottomLeftX, bottomLeftY] = bottomLeft;
+		p.draw({
+			topLeftX,
+			topLeftY,
+			topRightX,
+			topRightY,
+			bottomRightX,
+			bottomRightY,
+			bottomLeftX,
+			bottomLeftY
+		});
 	};
 
 	const onInput = () => {

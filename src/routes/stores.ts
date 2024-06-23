@@ -1,12 +1,15 @@
+import type { NormalizedLandmark } from '@mediapipe/tasks-vision';
 import { writable } from 'svelte/store';
 
 export type Coordinate = [number, number];
 export type Perspective = [Coordinate, Coordinate, Coordinate, Coordinate];
 
-const userPerspective = writable<Perspective>();
-const userPose = writable();
+export const userPerspective = writable<Perspective>();
+export const userPose = writable<NormalizedLandmark[]>();
+export const userPoseColor = writable<string>('white');
 
-const referencePerspective = writable<Perspective>();
-const referencePose = writable();
+export const referencePerspective = writable<Perspective>();
+export const referencePose = writable<NormalizedLandmark[]>();
+export const referencePoseColor = writable<string>('blue');
 
-export { userPerspective, userPose, referencePerspective, referencePose };
+export const referenceTransform = writable<Perspective>();

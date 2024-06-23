@@ -11,6 +11,7 @@ In progress:
     POST https://www.moonboard.com/Video/GetVideos
     form data: sort=&page=1&pageSize=8&group=&filter=Grade~eq~'6B%2B'
   - not sure if we need auth on this?
+- fix pose perspective
 
 
 
