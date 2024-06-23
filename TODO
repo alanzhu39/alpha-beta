@@ -12,6 +12,9 @@ In progress:
     form data: sort=&page=1&pageSize=8&group=&filter=Grade~eq~'6B%2B'
   - not sure if we need auth on this?
 - fix pose perspective
+  - make separate canvas to have perspective-shifted pose?
+  - orrr, could we even just calculate the pose transform ourself and then just draw that?
+  - and skip transforming the canvas
 
 
 
