@@ -141,8 +141,6 @@ function applyTransformToPoint(point: Coordinate, transform: Perspective) {
 }
 
 export function applyTransformToPose(pose: NormalizedLandmark[], transform: Perspective) {
-  // Pose is already normaized which is perfect
-  // We actually want to renormalize when we return?
   return pose.map((landmark) => {
     const [x, y] = applyTransformToPoint([landmark.x, landmark.y], transform);
     return {
