@@ -14,6 +14,7 @@
     userPose,
     userPoseColor
   } from './stores';
+  import { applyTransformToPose } from '$lib';
 
   export let backStep;
   export let videoSrc: string;
@@ -103,7 +104,7 @@
         // Draw user pose
         drawLandmark(drawingUtils, landmark, $userPoseColor);
 
-        // Draw overlay pose
+        // Draw overlay reference pose
         drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
 
         // update poseStore
@@ -146,14 +147,18 @@
     poseLandmarker.detectForVideo(displayCanvasRef, performance.now(), (result) => {
       context.save();
       for (const landmark of result.landmarks) {
-        // Draw user pose
-        drawLandmark(drawingUtils, landmark, $referencePoseColor);
+        // Apply perspective transform to detected pose
+        const transformedLandmark = applyTransformToPose(landmark, $referenceTransform);
+        console.log(transformedLandmark);
 
-        // Draw overlay pose
+        // Draw reference pose
+        drawLandmark(drawingUtils, transformedLandmark, $referencePoseColor);
+
+        // Draw overlay user pose
         drawLandmark(drawingUtils, $userPose, $userPoseColor);
 
         // update poseStore
-        $referencePose = landmark;
+        $referencePose = transformedLandmark;
       }
       context.restore();
     });

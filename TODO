@@ -5,6 +5,17 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 
+6/28/2024:
+In progress:
+- just doing reference pose detection on the transformed canvas
+  - hmmm this is actually a bit slower though?
+  - oh I think that makes sense as we're no longer doing detection on the detection canvas
+  - so maybe draw onto the detection canvas as well for display
+  - ohh shit but we can't draw in perspective to the detection canvas
+  - so this is why we have to apply transform to the landmark instead?
+
+
+
 6/21/2024:
 In progress:
 - moonboard api investigation:
