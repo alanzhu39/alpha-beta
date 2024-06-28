@@ -1,3 +1,4 @@
+import type { NormalizedLandmark } from '@mediapipe/tasks-vision';
 import type { Coordinate, Perspective } from '../routes/stores';
 
 function distance(coord1: Coordinate, coord2: Coordinate) {
@@ -109,6 +110,50 @@ export function calculateTransform(
 	return [c1, c2, c3, c4];
 }
 
+function applyTransformToPoint(point: Coordinate, transform: Perspective) {
+	// Transform:
+	// 0 v1 1
+	// h1 p h2
+	// 3 v2 2
+	const [t0, t1, t2, t3] = transform;
+	const [x, y] = point;
+
+	// Horizontal line
+	let [calcY] = makeLine(t0, t3);
+	const h1x = t0[0] * x + t3[0] * (1 - x);
+	const h1y = calcY(h1x);
+	[calcY] = makeLine(t1, t2);
+	const h2x = t1[0] * x + t2[0] * (1 - x);
+	const h2y = calcY(h2x);
+
+	// Vertical
+	let [, calcX] = makeLine(t0, t1);
+	const v1y = t0[1] * y + t1[1] * (1 - y);
+	const v1x = calcX(v1y);
+	[, calcX] = makeLine(t2, t3);
+	const v2y = t3[1] * y + t2[1] * (1 - y);
+	const v2x = calcX(v2y);
+
+	// Find intersection
+	const [a1, b1, c1] = getCoefficients([h1x, h1y], [h2x, h2y]);
+	const [a2, b2, c2] = getCoefficients([v1x, v1y], [v2x, v2y]);
+	return [(b1 * c2 - b2 * c1) / (a1 * b2 - a2 * b1), (c1 * a2 - c2 * a1) / (a1 * b2 - a2 * b1)];
+}
+
+export function applyTransformToPose(pose: NormalizedLandmark[], transform: Perspective) {
+	// Pose is already normaized which is perfect
+	// We actually want to renormalize when we return?
+	return pose.map((landmark) => {
+		const [x, y] = applyTransformToPoint([landmark.x, landmark.y], transform);
+		return {
+			...landmark,
+			x,
+			y
+		};
+	});
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function test() {
 	const source_coords = [
 		[0.1, 0.062],
