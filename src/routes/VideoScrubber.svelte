@@ -121,24 +121,7 @@
     // Draw frame with perspective shift
     context.fillRect(0, 0, videoWidth, videoHeight);
 
-    // Detect pose
-    const drawingUtils = new DrawingUtils(context);
-    poseLandmarker.detectForVideo(videoRef, performance.now(), (result) => {
-      context.save();
-      for (const landmark of result.landmarks) {
-        // Draw user pose
-        drawLandmark(drawingUtils, landmark, $referencePoseColor);
-
-        // Draw overlay pose
-        drawLandmark(drawingUtils, $userPose, $userPoseColor);
-
-        // update poseStore
-        $referencePose = landmark;
-      }
-      context.restore();
-    });
-
-    const p = new PerspectiveTransform(context, displayCanvasRef);
+    const p = new PerspectiveTransform(context, videoRef);
     const [topLeft, topRight, bottomRight, bottomLeft] = $referenceTransform.map(([x, y]) => [
       x * videoWidth,
       y * videoHeight
@@ -156,6 +139,23 @@
       bottomRightY,
       bottomLeftX,
       bottomLeftY
+    });
+
+    // Detect pose
+    const drawingUtils = new DrawingUtils(context);
+    poseLandmarker.detectForVideo(displayCanvasRef, performance.now(), (result) => {
+      context.save();
+      for (const landmark of result.landmarks) {
+        // Draw user pose
+        drawLandmark(drawingUtils, landmark, $referencePoseColor);
+
+        // Draw overlay pose
+        drawLandmark(drawingUtils, $userPose, $userPoseColor);
+
+        // update poseStore
+        $referencePose = landmark;
+      }
+      context.restore();
     });
   };
 

@@ -50,7 +50,7 @@
     <SelectBoundary {videoSrc} bind:corners nextStep={onSelectedBoundary} />
   {/if}
   {#if currentStep === STEPS.DISPLAY}
-    <VideoScrubber {videoSrc} backStep={onScrubberBack} />
+    <VideoScrubber {videoSrc} backStep={onScrubberBack} isReference={true} />
   {/if}
 </div>
 
