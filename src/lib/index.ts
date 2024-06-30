@@ -119,18 +119,16 @@ function applyTransformToPoint(point: Coordinate, transform: Perspective) {
   const [x, y] = point;
 
   // Horizontal line
-  const h1x = t0[0] * y + t3[0] * (1 - y);
-  const h1y = t0[1] * y + t3[1] * (1 - y);
-  const h2x = t1[0] * y + t2[0] * (1 - y);
-  const h2y = t1[1] * y + t2[1] * (1 - y);
+  const h1x = t0[0] * (1 - y) + t3[0] * y;
+  const h1y = t0[1] * (1 - y) + t3[1] * y;
+  const h2x = t1[0] * (1 - y) + t2[0] * y;
+  const h2y = t1[1] * (1 - y) + t2[1] * y;
 
   // Find intersection
-  return [h1x * x + h2x * (1 - x), h1y * y + h2y * (1 - y)];
+  return [h1x * (1 - x) + h2x * x, h1y * (1 - x) + h2y * x];
 }
 
 export function applyTransformToPose(pose: NormalizedLandmark[], transform: Perspective) {
-  console.log(transform);
-  console.log(pose);
   return pose.map((landmark) => {
     const [x, y] = applyTransformToPoint([landmark.x, landmark.y], transform);
     return {

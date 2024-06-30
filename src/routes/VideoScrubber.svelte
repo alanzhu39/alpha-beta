@@ -144,12 +144,11 @@
 
     // Detect pose
     const drawingUtils = new DrawingUtils(context);
-    poseLandmarker.detectForVideo(displayCanvasRef, performance.now(), (result) => {
+    poseLandmarker.detectForVideo(videoRef, performance.now(), (result) => {
       context.save();
       for (const landmark of result.landmarks) {
         // Apply perspective transform to detected pose
         const transformedLandmark = applyTransformToPose(landmark, $referenceTransform);
-        console.log(transformedLandmark);
 
         // Draw reference pose
         drawLandmark(drawingUtils, transformedLandmark, $referencePoseColor);
