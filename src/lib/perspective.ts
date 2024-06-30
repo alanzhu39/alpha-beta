@@ -30,30 +30,22 @@ interface Quadrilateral {
   bottomLeftY: number;
 }
 
+type Frame = HTMLImageElement | HTMLVideoElement;
+
 export default class Perspective {
   // Context for destination (output will go here)
   private ctxd: CanvasRenderingContext2D;
 
   // Canvas for original image
-  private cvso: HTMLCanvasElement;
-
-  // Context for original image
-  private ctxo: CanvasRenderingContext2D | null;
+  private image: Frame;
 
   // Context for transformed image
   private ctxt: CanvasRenderingContext2D | null;
 
-  constructor(ctxd: CanvasRenderingContext2D, image: HTMLImageElement | HTMLVideoElement) {
+  constructor(ctxd: CanvasRenderingContext2D, image: Frame) {
     this.ctxd = ctxd;
 
-    // prepare a <canvas> for the image
-    const cvso = document.createElement('canvas');
-    this.cvso = cvso;
-
-    cvso.width = Math.round(image.offsetWidth);
-    cvso.height = Math.round(image.offsetHeight);
-    const ctxo = cvso.getContext('2d');
-    this.ctxo = ctxo;
+    this.image = image;
 
     // prepare a <canvas> for the transformed image
     const cvst = document.createElement('canvas');
@@ -62,9 +54,6 @@ export default class Perspective {
 
     const ctxt = cvst.getContext('2d');
     this.ctxt = ctxt;
-
-    if (!ctxt || !ctxo) return;
-    ctxo.drawImage(image, 0, 0, cvso.width, cvso.height);
   }
 
   draw(q: Quadrilateral) {
@@ -86,8 +75,8 @@ export default class Perspective {
       Math.sqrt(Math.pow(bottomRightX - bottomLeftX, 2) + Math.pow(bottomRightY - bottomLeftY, 2)), // bottom side
       Math.sqrt(Math.pow(bottomLeftX - topLeftX, 2) + Math.pow(bottomLeftY - topLeftY, 2)) // left side
     ];
-    const ow = this.cvso.width;
-    const oh = this.cvso.height;
+    const ow = this.image.offsetWidth;
+    const oh = this.image.offsetHeight;
     // specify the index of which dimension is longest
     let base_index = 0;
     let max_scale_rate = 0;
@@ -112,8 +101,6 @@ export default class Perspective {
     }
     const step = 2;
     const cover_step = step * 5;
-    const ctxo = this.ctxo;
-    if (!ctxo) return;
     const ctxt = this.ctxt;
     if (!ctxt) return;
     ctxt.clearRect(0, 0, ctxt.canvas.width, ctxt.canvas.height);
@@ -132,7 +119,7 @@ export default class Perspective {
         const ag = Math.atan((ey - sy) / (ex - sx));
         const sc = Math.sqrt(Math.pow(ex - sx, 2) + Math.pow(ey - sy, 2)) / ow;
         ctxl.setTransform(1, 0, 0, 1, 0, -y);
-        ctxl.drawImage(ctxo.canvas, 0, 0);
+        ctxl.drawImage(this.image, 0, 0, this.image.offsetWidth, this.image.offsetHeight);
         ctxt.translate(sx, sy);
         ctxt.rotate(ag);
         ctxt.scale(sc, sc);
@@ -154,7 +141,7 @@ export default class Perspective {
         const ag = Math.atan((sx - ex) / (ey - sy));
         const sc = Math.sqrt(Math.pow(ex - sx, 2) + Math.pow(ey - sy, 2)) / oh;
         ctxl.setTransform(1, 0, 0, 1, -x, 0);
-        ctxl.drawImage(ctxo.canvas, 0, 0);
+        ctxl.drawImage(this.image, 0, 0, this.image.offsetWidth, this.image.offsetHeight);
         ctxt.translate(sx, sy);
         ctxt.rotate(ag);
         ctxt.scale(sc, sc);
