@@ -38,39 +38,37 @@ export default class Perspective {
   private cvso: HTMLCanvasElement;
 
   // Context for original image
-  private ctxo: CanvasRenderingContext2D;
+  private ctxo: CanvasRenderingContext2D | null;
 
   // Context for transformed image
-  private ctxt: CanvasRenderingContext2D;
+  private ctxt: CanvasRenderingContext2D | null;
 
   constructor(ctxd: CanvasRenderingContext2D, image: HTMLImageElement) {
-    // check the arguments
-    if (!ctxd || !ctxd.strokeStyle) {
-      return;
-    }
-    if (!image || !image.width || !image.height) {
-      return;
-    }
+    this.ctxd = ctxd;
+
     // prepare a <canvas> for the image
-    let cvso = document.createElement('canvas');
+    const cvso = document.createElement('canvas');
+    this.cvso = cvso;
+
     cvso.width = Math.round(image.width);
     cvso.height = Math.round(image.height);
-    let ctxo = cvso.getContext('2d');
-    ctxo.drawImage(image, 0, 0, cvso.width, cvso.height);
+    const ctxo = cvso.getContext('2d');
+    this.ctxo = ctxo;
+
     // prepare a <canvas> for the transformed image
-    let cvst = document.createElement('canvas');
+    const cvst = document.createElement('canvas');
     cvst.width = ctxd.canvas.width;
     cvst.height = ctxd.canvas.height;
-    let ctxt = cvst.getContext('2d');
 
-    this.ctxd = ctxd;
-    this.cvso = cvso;
-    this.ctxo = ctxo;
+    const ctxt = cvst.getContext('2d');
     this.ctxt = ctxt;
+
+    if (!ctxt || !ctxo) return;
+    ctxo.drawImage(image, 0, 0, cvso.width, cvso.height);
   }
 
   draw(q: Quadrilateral) {
-    let {
+    const {
       topLeftX,
       topLeftY,
       topRightX,
@@ -82,15 +80,14 @@ export default class Perspective {
     } = q;
 
     // compute the dimension of each side
-    let dims = [
+    const dims = [
       Math.sqrt(Math.pow(topLeftX - topRightX, 2) + Math.pow(topLeftY - topRightY, 2)), // top side
       Math.sqrt(Math.pow(topRightX - bottomRightX, 2) + Math.pow(topRightY - bottomRightY, 2)), // right side
       Math.sqrt(Math.pow(bottomRightX - bottomLeftX, 2) + Math.pow(bottomRightY - bottomLeftY, 2)), // bottom side
       Math.sqrt(Math.pow(bottomLeftX - topLeftX, 2) + Math.pow(bottomLeftY - topLeftY, 2)) // left side
     ];
-    //
-    let ow = this.cvso.width;
-    let oh = this.cvso.height;
+    const ow = this.cvso.width;
+    const oh = this.cvso.height;
     // specify the index of which dimension is longest
     let base_index = 0;
     let max_scale_rate = 0;
@@ -113,57 +110,55 @@ export default class Perspective {
     if (zero_num > 1) {
       return;
     }
-    //
-    let step = 2;
-    let cover_step = step * 5;
-    //
-    let ctxo = this.ctxo;
-    let ctxt = this.ctxt;
+    const step = 2;
+    const cover_step = step * 5;
+    const ctxo = this.ctxo;
+    if (!ctxo) return;
+    const ctxt = this.ctxt;
+    if (!ctxt) return;
     ctxt.clearRect(0, 0, ctxt.canvas.width, ctxt.canvas.height);
     if (base_index % 2 == 0) {
       // top or bottom side
-      let ctxl = this.create_canvas_context(ow, cover_step);
+      const ctxl = this.create_canvas_context(ow, cover_step);
+      if (!ctxl) return;
       ctxl.globalCompositeOperation = 'copy';
-      let cvsl = ctxl.canvas;
+      const cvsl = ctxl.canvas;
       for (let y = 0; y < oh; y += step) {
-        let r = y / oh;
-        let sx = topLeftX + (bottomLeftX - topLeftX) * r;
-        let sy = topLeftY + (bottomLeftY - topLeftY) * r;
-        let ex = topRightX + (bottomRightX - topRightX) * r;
-        let ey = topRightY + (bottomRightY - topRightY) * r;
-        let ag = Math.atan((ey - sy) / (ex - sx));
-        let sc = Math.sqrt(Math.pow(ex - sx, 2) + Math.pow(ey - sy, 2)) / ow;
+        const r = y / oh;
+        const sx = topLeftX + (bottomLeftX - topLeftX) * r;
+        const sy = topLeftY + (bottomLeftY - topLeftY) * r;
+        const ex = topRightX + (bottomRightX - topRightX) * r;
+        const ey = topRightY + (bottomRightY - topRightY) * r;
+        const ag = Math.atan((ey - sy) / (ex - sx));
+        const sc = Math.sqrt(Math.pow(ex - sx, 2) + Math.pow(ey - sy, 2)) / ow;
         ctxl.setTransform(1, 0, 0, 1, 0, -y);
         ctxl.drawImage(ctxo.canvas, 0, 0);
-        //
         ctxt.translate(sx, sy);
         ctxt.rotate(ag);
         ctxt.scale(sc, sc);
         ctxt.drawImage(cvsl, 0, 0);
-        //
         ctxt.setTransform(1, 0, 0, 1, 0, 0);
       }
     } else if (base_index % 2 == 1) {
       // right or left side
-      let ctxl = this.create_canvas_context(cover_step, oh);
+      const ctxl = this.create_canvas_context(cover_step, oh);
+      if (!ctxl) return;
       ctxl.globalCompositeOperation = 'copy';
-      let cvsl = ctxl.canvas;
+      const cvsl = ctxl.canvas;
       for (let x = 0; x < ow; x += step) {
-        let r = x / ow;
-        let sx = topLeftX + (topRightX - topLeftX) * r;
-        let sy = topLeftY + (topRightY - topLeftY) * r;
-        let ex = bottomLeftX + (bottomRightX - bottomLeftX) * r;
-        let ey = bottomLeftY + (bottomRightY - bottomLeftY) * r;
-        let ag = Math.atan((sx - ex) / (ey - sy));
-        let sc = Math.sqrt(Math.pow(ex - sx, 2) + Math.pow(ey - sy, 2)) / oh;
+        const r = x / ow;
+        const sx = topLeftX + (topRightX - topLeftX) * r;
+        const sy = topLeftY + (topRightY - topLeftY) * r;
+        const ex = bottomLeftX + (bottomRightX - bottomLeftX) * r;
+        const ey = bottomLeftY + (bottomRightY - bottomLeftY) * r;
+        const ag = Math.atan((sx - ex) / (ey - sy));
+        const sc = Math.sqrt(Math.pow(ex - sx, 2) + Math.pow(ey - sy, 2)) / oh;
         ctxl.setTransform(1, 0, 0, 1, -x, 0);
         ctxl.drawImage(ctxo.canvas, 0, 0);
-        //
         ctxt.translate(sx, sy);
         ctxt.rotate(ag);
         ctxt.scale(sc, sc);
         ctxt.drawImage(cvsl, 0, 0);
-        //
         ctxt.setTransform(1, 0, 0, 1, 0, 0);
       }
     }
@@ -175,10 +170,10 @@ export default class Perspective {
   }
 
   private create_canvas_context(w: number, h: number) {
-    let canvas = document.createElement('canvas');
+    const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
-    let ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
     return ctx;
   }
 
