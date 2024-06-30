@@ -63,10 +63,11 @@
   const drawFrame = (
     context: CanvasRenderingContext2D,
     videoWidth: number,
-    videoHeight: number
+    videoHeight: number,
+    perspectiveTransform: PerspectiveTransform
   ) => {
     if (isReference) {
-      drawFrameAsReference(context, videoWidth, videoHeight);
+      drawFrameAsReference(context, videoWidth, videoHeight, perspectiveTransform);
     } else {
       drawFrameAsUser(context, videoWidth, videoHeight);
     }
@@ -117,12 +118,12 @@
   const drawFrameAsReference = (
     context: CanvasRenderingContext2D,
     videoWidth: number,
-    videoHeight: number
+    videoHeight: number,
+    perspectiveTransform: PerspectiveTransform
   ) => {
     // Draw frame with perspective shift
     context.fillRect(0, 0, videoWidth, videoHeight);
 
-    const p = new PerspectiveTransform(context, videoRef);
     const [topLeft, topRight, bottomRight, bottomLeft] = $referenceTransform.map(([x, y]) => [
       x * videoWidth,
       y * videoHeight
@@ -131,7 +132,7 @@
     const [topRightX, topRightY] = topRight;
     const [bottomRightX, bottomRightY] = bottomRight;
     const [bottomLeftX, bottomLeftY] = bottomLeft;
-    p.draw({
+    perspectiveTransform.draw({
       topLeftX,
       topLeftY,
       topRightX,
@@ -144,20 +145,17 @@
 
     // Detect pose
     const drawingUtils = new DrawingUtils(context);
-    poseLandmarker.detectForVideo(videoRef, performance.now(), (result) => {
+    poseLandmarker.detectForVideo(displayCanvasRef, performance.now(), (result) => {
       context.save();
       for (const landmark of result.landmarks) {
-        // Apply perspective transform to detected pose
-        const transformedLandmark = applyTransformToPose(landmark, $referenceTransform);
-
         // Draw reference pose
-        drawLandmark(drawingUtils, transformedLandmark, $referencePoseColor);
+        drawLandmark(drawingUtils, landmark, $referencePoseColor);
 
         // Draw overlay user pose
         drawLandmark(drawingUtils, $userPose, $userPoseColor);
 
         // update poseStore
-        $referencePose = transformedLandmark;
+        $referencePose = landmark;
       }
       context.restore();
     });
@@ -169,25 +167,30 @@
 
   const onSeeked = () => {
     const context = displayCanvasRef.getContext('2d');
+    if (!context) return;
+
     const canvasWidth = displayCanvasRef.offsetWidth;
     const canvasHeight = displayCanvasRef.offsetHeight;
     displayCanvasRef.width = canvasWidth;
     displayCanvasRef.height = canvasHeight;
     const videoWidth = videoRef.offsetWidth;
     const videoHeight = videoRef.offsetHeight;
-    if (!context) return;
+    const perspectiveTransform = new PerspectiveTransform(context, videoRef);
 
-    drawFrame(context, videoWidth, videoHeight);
+    drawFrame(context, videoWidth, videoHeight, perspectiveTransform);
   };
 
   const onPlay = () => {
     const context = displayCanvasRef.getContext('2d');
+    if (!context) return;
+
     const canvasWidth = displayCanvasRef.offsetWidth;
     const canvasHeight = displayCanvasRef.offsetHeight;
     displayCanvasRef.width = canvasWidth;
     displayCanvasRef.height = canvasHeight;
     const videoWidth = videoRef.offsetWidth;
     const videoHeight = videoRef.offsetHeight;
+    const perspectiveTransform = new PerspectiveTransform(context, videoRef);
 
     const start = performance.now();
 
@@ -199,7 +202,7 @@
         return;
       }
 
-      drawFrame(context, videoWidth, videoHeight);
+      drawFrame(context, videoWidth, videoHeight, perspectiveTransform);
 
       requestAnimationFrame(() => step(count + 1));
     }

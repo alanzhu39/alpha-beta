@@ -9,6 +9,19 @@ TODO:
 In progress:
 - hmm so actually I feel like we can just have the user copy/paste the embed code?
 - utilize the searching and stuff from the existing moonboard app lol
+- wait lol so the performance doesn't actually change if we detect off of the display canvas vs the video
+  - of course lol
+  - the detection canvas is just there so we have a webgl2 context that we can run GPU stuff in
+  - we're not actually ever drawing anything to the detection canvas
+- so the performance is probably bottlenecked on drawing the perspective transform?
+  - and specifically I think creating the new PerspectiveTransform object on each frame lol
+  - cuz looking at the internals it makes whole new canvas nodes
+- ok yeah so once we remove the perspective shift step, it's back to 20fps
+  - and we won't even need the apply transform to pose
+  - lose about 1fps adding that actually even lol
+- uhhh shit looks like we have to reinstantiate perspective transform for each frame??
+  - ohh I think that makes sense? since it's assuming it's reading from an image
+  - maybe we can patch to accept video
 
 
 
