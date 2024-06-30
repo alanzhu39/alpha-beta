@@ -43,15 +43,15 @@ export default class Perspective {
   // Context for transformed image
   private ctxt: CanvasRenderingContext2D | null;
 
-  constructor(ctxd: CanvasRenderingContext2D, image: HTMLImageElement) {
+  constructor(ctxd: CanvasRenderingContext2D, image: HTMLImageElement | HTMLVideoElement) {
     this.ctxd = ctxd;
 
     // prepare a <canvas> for the image
     const cvso = document.createElement('canvas');
     this.cvso = cvso;
 
-    cvso.width = Math.round(image.width);
-    cvso.height = Math.round(image.height);
+    cvso.width = Math.round(image.offsetWidth);
+    cvso.height = Math.round(image.offsetHeight);
     const ctxo = cvso.getContext('2d');
     this.ctxo = ctxo;
 

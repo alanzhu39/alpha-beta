@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { default as PerspectiveTransform } from 'perspectivets';
+  import { default as PerspectiveTransform } from '$lib/perspective';
   import {
     DrawingUtils,
     FilesetResolver,
@@ -14,7 +14,6 @@
     userPose,
     userPoseColor
   } from './stores';
-  import { applyTransformToPose } from '$lib';
 
   export let backStep;
   export let videoSrc: string;
