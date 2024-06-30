@@ -22,6 +22,9 @@ In progress:
 - uhhh shit looks like we have to reinstantiate perspective transform for each frame??
   - ohh I think that makes sense? since it's assuming it's reading from an image
   - maybe we can patch to accept video
+- hmm even with porting over perspective stuff, it seems to be going a little slow per frame...
+  - I think on the draw there's still some dom node creation which we could speed up?
+  - is this doing some thing for each offset?
 
 
 
