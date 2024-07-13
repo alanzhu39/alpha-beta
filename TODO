@@ -7,6 +7,15 @@ TODO:
 
 7/13/2024:
 In progress:
+- prioritization:
+  - synchronize the pose displays better
+  - add instagram embed links syncing
+  - ipad testing
+  - make designs prettier
+  - improve boundary selection process
+  - improve state persistence/management?
+    - so like figuring out going back and forwards and stuff
+
 - tidy up designs
 - fix perspective drawing
   - can we also maybe improve the performance?
