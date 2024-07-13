@@ -153,5 +153,8 @@ function test() {
     [0.8, 0.8],
     [0.2, 0.8]
   ] as Perspective;
+  // Expected values: [0.155, 0.169], [0.896, 0.205], [0.921, 0.875], [0.022, 0.872]
   console.log(calculateTransform(source_coords, dest_coords));
 }
+
+test();

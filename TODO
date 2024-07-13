@@ -16,6 +16,8 @@ In progress:
   - boundary selection UX, since sometimes holds can still be like slightly misaligned...
     - how can we let the user adjust this as they're scrubbing?
     - or maybe we can adjust one screen while the other one is already playing?
+    - also maybe allow scrubbing on the initial frame corner selection page
+      so you can account for slight adjustements during the video and occluded corners
   - displaying first frame on load of the scrubber screen component
   - better scrubber UI
   - better colors and fonts

@@ -8,12 +8,15 @@
     type NormalizedLandmark
   } from '@mediapipe/tasks-vision';
   import {
+    referencePerspective,
     referencePose,
     referencePoseColor,
-    referenceTransform,
+    userPerspective,
     userPose,
-    userPoseColor
+    userPoseColor,
+    type Perspective
   } from './stores';
+  import { calculateTransform } from '$lib';
 
   export let backStep;
   export let videoSrc: string;
@@ -27,6 +30,7 @@
   let isPlaying = false;
 
   let poseLandmarker: PoseLandmarker;
+  let referenceTransform: Perspective;
 
   onMount(async () => {
     const vision = await FilesetResolver.forVisionTasks('@mediapipe/tasks-vision/wasm');
@@ -46,6 +50,12 @@
   $: {
     if (rangeRef && videoDuration) {
       rangeRef.max = videoDuration.toString();
+    }
+  }
+
+  $: {
+    if ($referencePerspective && $userPerspective) {
+      referenceTransform = calculateTransform($referencePerspective, $userPerspective);
     }
   }
 
@@ -123,7 +133,7 @@
     // Draw frame with perspective shift
     context.fillRect(0, 0, videoWidth, videoHeight);
 
-    const [topLeft, topRight, bottomRight, bottomLeft] = $referenceTransform.map(([x, y]) => [
+    const [topLeft, topRight, bottomRight, bottomLeft] = referenceTransform.map(([x, y]) => [
       x * videoWidth,
       y * videoHeight
     ]);

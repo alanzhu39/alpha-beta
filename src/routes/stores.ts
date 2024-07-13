@@ -11,5 +11,3 @@ export const userPoseColor = writable<string>('white');
 export const referencePerspective = writable<Perspective>();
 export const referencePose = writable<NormalizedLandmark[]>();
 export const referencePoseColor = writable<string>('blue');
-
-export const referenceTransform = writable<Perspective>();

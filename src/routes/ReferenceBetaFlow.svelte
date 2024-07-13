@@ -1,14 +1,8 @@
 <script lang="ts">
-  import { calculateTransform } from '$lib';
   import SelectBoundary from './SelectBoundary.svelte';
   import VideoScrubber from './VideoScrubber.svelte';
   import VideoUpload from './VideoUpload.svelte';
-  import {
-    referencePerspective,
-    referenceTransform,
-    userPerspective,
-    type Coordinate
-  } from './stores';
+  import { referencePerspective, type Coordinate } from './stores';
 
   const STEPS = {
     VIDEO_UPLOAD: 'videoUpload',
@@ -19,12 +13,6 @@
   let currentStep = STEPS.VIDEO_UPLOAD;
   let videoSrc = '';
   let corners: Coordinate[];
-
-  $: {
-    if ($referencePerspective && $userPerspective) {
-      $referenceTransform = calculateTransform($referencePerspective, $userPerspective);
-    }
-  }
 
   const onVideoUpload = () => {
     currentStep = STEPS.SELECT_BOUNDARY;

@@ -9,6 +9,7 @@
 
   let videoRef: HTMLVideoElement;
   let canvasRef: HTMLCanvasElement;
+  let rangeRef: HTMLInputElement;
   let currentCorner = 0;
 
   const drawCorners = () => {
@@ -37,6 +38,10 @@
     drawCorners();
   };
 
+  const onInput = () => {
+    videoRef.currentTime = parseFloat(rangeRef.value);
+  };
+
   const onBack = () => {
     currentCorner--;
     corners.pop();
@@ -61,6 +66,7 @@
     </video>
     <canvas class="video-canvas" id="video-canvas" bind:this={canvasRef} on:click={onCanvasClick} />
   </div>
+  <input type="range" step="0.03" value="0" bind:this={rangeRef} on:input={onInput} />
   <!-- Instructions -->
   <div class="instructions-container">
     <span>Select each corner hold of the MoonBoard.</span>
