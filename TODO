@@ -5,6 +5,24 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 
+7/13/2024:
+In progress:
+- tidy up designs
+- fix perspective drawing
+  - can we also maybe improve the performance?
+  - right now it like copies stuff to a canvas...
+  - can we tweak the internals to just draw straight to the display canvas?
+- improvements:
+  - boundary selection UX, since sometimes holds can still be like slightly misaligned...
+    - how can we let the user adjust this as they're scrubbing?
+    - or maybe we can adjust one screen while the other one is already playing?
+  - displaying first frame on load of the scrubber screen component
+  - better scrubber UI
+  - better colors and fonts
+  - testing on ipad
+
+
+
 6/30/2024:
 In progress:
 - hmm so actually I feel like we can just have the user copy/paste the embed code?
