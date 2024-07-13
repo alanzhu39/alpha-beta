@@ -62,7 +62,7 @@ export function calculateTransform(
     const dist_s1_s2 = distance(s1, s2);
     const dist_d1_d2 = distance(d1, d2);
     const scaling_factor = dist_d1_d2 / dist_s1_s2;
-    const direction = [d2[0] - d1[0], d2[1] - d1[1]];
+    const direction = [(d2[0] - d1[0]) / dist_d1_d2, (d2[1] - d1[1]) / dist_d1_d2];
     const dist_s3_s2 = distance(s3, s2);
     const dist_d3_d2 = scaling_factor * dist_s3_s2;
     return [d2[0] + direction[0] * dist_d3_d2, d2[1] + direction[1] * dist_d3_d2];
@@ -139,22 +139,46 @@ export function applyTransformToPose(pose: NormalizedLandmark[], transform: Pers
   });
 }
 
+function perspectivesEqual(p1: Perspective, p2: Perspective) {
+  const [[a1x, a1y], [b1x, b1y], [c1x, c1y], [d1x, d1y]] = p1;
+  const [[a2x, a2y], [b2x, b2y], [c2x, c2y], [d2x, d2y]] = p2;
+  return (
+    a1x === a2x &&
+    a1y === a2y &&
+    b1x === b2x &&
+    b1y === b2y &&
+    c1x === c2x &&
+    c1y === c2y &&
+    d1x === d2x &&
+    d1y === d2y
+  );
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function test() {
   const source_coords = [
-    [0.1, 0.062],
-    [0.811, 0],
-    [0.816, 0.828],
-    [0.256, 0.842]
+    [0.1, 0.1],
+    [0.9, 0.1],
+    [0.9, 0.9],
+    [0.1, 0.9]
   ] as Perspective;
   const dest_coords = [
-    [0.2, 0.2],
-    [0.8, 0.2],
-    [0.8, 0.8],
-    [0.2, 0.8]
+    [0.1, 0.1],
+    [0.9, 0.1],
+    [0.9, 0.9],
+    [0.1, 0.9]
   ] as Perspective;
-  // Expected values: [0.155, 0.169], [0.896, 0.205], [0.921, 0.875], [0.022, 0.872]
-  console.log(calculateTransform(source_coords, dest_coords));
+  const same_coords_expected_output = [
+    [0.0, 0.0],
+    [1.0, 0.0],
+    [1.0, 1.0],
+    [0.0, 1.0]
+  ] as Perspective;
+  const same_coords_actual_output = calculateTransform(source_coords, dest_coords);
+  console.log(same_coords_actual_output, same_coords_expected_output);
+  console.log(
+    perspectivesEqual(same_coords_actual_output, same_coords_expected_output)
+      ? 'success'
+      : 'failure'
+  );
 }
-
-test();
