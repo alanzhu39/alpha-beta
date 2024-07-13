@@ -13,6 +13,7 @@ In progress:
   - ipad testing
   - make designs prettier
   - improve boundary selection process
+    - maybe can play around with overlays?
   - improve state persistence/management?
     - so like figuring out going back and forwards and stuff
 
