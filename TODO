@@ -6,6 +6,7 @@ TODO:
 
 - prioritization:
   - synchronize the pose displays better
+  - improve perspective transform display performance
   - add instagram embed links syncing
   - ipad testing
   - make designs prettier
@@ -13,14 +14,28 @@ TODO:
     - maybe can play around with overlays?
   - improve state persistence/management?
     - so like figuring out going back and forwards and stuff
+  - improve code quality
 
 
 7/13/2024:
 In progress:
+- improve perspective transform display performance
+- clean up pose synchronization code? could maybe refactor some of the logic
+
+Done:
 - synchronize pose displays better
   - so like when you play eg. the reference video, the pose should update on the user video
   - should we just bind the canvases between the components?
   - but the two flows actually don't share any context either
+  - uh ok so I made it so that like, if you're drawing the user canvas, and you detect a change in the reference pose store, then you also draw that one
+  - seems to make the performance slower though, like 20fps -> 10fps
+  - will do some testing on the cause
+    - ah ok so yeah, it's the same thing of the perspective drawing being the bottleneck I think
+    - like, when we draw the user pose onto the reference canvas, we still have to redraw the underlying image, which is perspective shifted
+    - so that calls the perspective API which is slow
+    - notice that on the other side, adding the drawing on the user canvas from the reference pose updates introduces no significant performance decrease
+    - performance is still around 10 fps which is the same as just drawing the reference canvas itself
+  - so yeah looks like next step would be trying to improve perspective performance
 
 - tidy up designs
 - fix perspective drawing
