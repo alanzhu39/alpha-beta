@@ -4,9 +4,6 @@ TODO:
   - this comes with a subgoal of being able to manipulate the videos so that the board positions and thus the holds overlay properly, so that the poses will also match properly
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
-
-7/13/2024:
-In progress:
 - prioritization:
   - synchronize the pose displays better
   - add instagram embed links syncing
@@ -16,6 +13,14 @@ In progress:
     - maybe can play around with overlays?
   - improve state persistence/management?
     - so like figuring out going back and forwards and stuff
+
+
+7/13/2024:
+In progress:
+- synchronize pose displays better
+  - so like when you play eg. the reference video, the pose should update on the user video
+  - should we just bind the canvases between the components?
+  - but the two flows actually don't share any context either
 
 - tidy up designs
 - fix perspective drawing

@@ -59,13 +59,52 @@
     }
   }
 
+  $: {
+    if (
+      isReference &&
+      $userPose &&
+      !isPlaying &&
+      displayCanvasRef &&
+      videoRef &&
+      detectionCanvasRef
+    ) {
+      const context = displayCanvasRef.getContext('2d');
+      if (context) {
+        const perspectiveTransform = new PerspectiveTransform(context, videoRef);
+        drawFrameAsReference(
+          context,
+          videoRef.offsetWidth,
+          videoRef.offsetHeight,
+          perspectiveTransform,
+          false
+        );
+      }
+    }
+  }
+
+  $: {
+    if (
+      !isReference &&
+      $referencePose &&
+      !isPlaying &&
+      displayCanvasRef &&
+      videoRef &&
+      detectionCanvasRef
+    ) {
+      const context = displayCanvasRef.getContext('2d');
+      if (context) {
+        drawFrameAsUser(context, videoRef.offsetWidth, videoRef.offsetHeight, false);
+      }
+    }
+  }
+
   const onPlayClick = () => {
-    isPlaying = !isPlaying;
+    isPlaying = true;
     videoRef.play();
   };
 
   const onPauseClick = () => {
-    isPlaying = !isPlaying;
+    isPlaying = false;
     videoRef.pause();
   };
 
@@ -73,62 +112,54 @@
     context: CanvasRenderingContext2D,
     videoWidth: number,
     videoHeight: number,
-    perspectiveTransform: PerspectiveTransform
+    perspectiveTransform: PerspectiveTransform,
+    detectPose: boolean = true
   ) => {
     if (isReference) {
-      drawFrameAsReference(context, videoWidth, videoHeight, perspectiveTransform);
+      drawFrameAsReference(context, videoWidth, videoHeight, perspectiveTransform, detectPose);
     } else {
-      drawFrameAsUser(context, videoWidth, videoHeight);
+      drawFrameAsUser(context, videoWidth, videoHeight, detectPose);
     }
-  };
-
-  const drawLandmark = (
-    drawingUtils: DrawingUtils,
-    landmark: NormalizedLandmark[],
-    color: string
-  ) => {
-    drawingUtils.drawLandmarks(landmark, {
-      lineWidth: 2,
-      radius: 2,
-      color
-    });
-    drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, {
-      lineWidth: 2,
-      color
-    });
   };
 
   const drawFrameAsUser = (
     context: CanvasRenderingContext2D,
     videoWidth: number,
-    videoHeight: number
+    videoHeight: number,
+    detectPose: boolean
   ) => {
     // Just draw the frame
     context.drawImage(videoRef, 0, 0, videoWidth, videoHeight);
 
-    // Detect pose
+    // Draw overlay reference pose
     const drawingUtils = new DrawingUtils(context);
-    poseLandmarker.detectForVideo(videoRef, performance.now(), (result) => {
-      context.save();
-      for (const landmark of result.landmarks) {
-        // Draw user pose
-        drawLandmark(drawingUtils, landmark, $userPoseColor);
+    drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
 
-        // Draw overlay reference pose
-        drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
+    // Detect pose
+    if (detectPose) {
+      poseLandmarker.detectForVideo(videoRef, performance.now(), (result) => {
+        context.save();
+        for (const landmark of result.landmarks) {
+          // Draw user pose
+          drawLandmark(drawingUtils, landmark, $userPoseColor);
 
-        // update poseStore
-        $userPose = landmark;
-      }
-      context.restore();
-    });
+          // update poseStore
+          $userPose = landmark;
+        }
+        context.restore();
+      });
+    } else {
+      // Just draw user pose
+      drawLandmark(drawingUtils, $userPose, $userPoseColor);
+    }
   };
 
   const drawFrameAsReference = (
     context: CanvasRenderingContext2D,
     videoWidth: number,
     videoHeight: number,
-    perspectiveTransform: PerspectiveTransform
+    perspectiveTransform: PerspectiveTransform,
+    detectPose: boolean
   ) => {
     // Draw frame with perspective shift
     context.fillRect(0, 0, videoWidth, videoHeight);
@@ -152,21 +183,42 @@
       bottomLeftY
     });
 
-    // Detect pose
+    // Draw overlay user pose
     const drawingUtils = new DrawingUtils(context);
-    poseLandmarker.detectForVideo(displayCanvasRef, performance.now(), (result) => {
-      context.save();
-      for (const landmark of result.landmarks) {
-        // Draw reference pose
-        drawLandmark(drawingUtils, landmark, $referencePoseColor);
+    drawLandmark(drawingUtils, $userPose, $userPoseColor);
 
-        // Draw overlay user pose
-        drawLandmark(drawingUtils, $userPose, $userPoseColor);
+    // Detect pose
+    if (detectPose) {
+      poseLandmarker.detectForVideo(displayCanvasRef, performance.now(), (result) => {
+        context.save();
+        for (const landmark of result.landmarks) {
+          // Draw reference pose
+          drawLandmark(drawingUtils, landmark, $referencePoseColor);
 
-        // update poseStore
-        $referencePose = landmark;
-      }
-      context.restore();
+          // update poseStore
+          $referencePose = landmark;
+        }
+        context.restore();
+      });
+    } else {
+      // Just draw reference pose
+      drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
+    }
+  };
+
+  const drawLandmark = (
+    drawingUtils: DrawingUtils,
+    landmark: NormalizedLandmark[],
+    color: string
+  ) => {
+    drawingUtils.drawLandmarks(landmark, {
+      lineWidth: 2,
+      radius: 2,
+      color
+    });
+    drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, {
+      lineWidth: 2,
+      color
     });
   };
 
@@ -226,7 +278,6 @@
 
 <div class="container">
   <button class="back-button" on:click={backStep}>Back</button>
-  <!-- TODO: back button -->
   <div class="video-container">
     <video
       class="user-video"
