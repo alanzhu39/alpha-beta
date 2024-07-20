@@ -17,6 +17,17 @@ TODO:
   - improve code quality
 
 
+7/18/2024:
+In progress:
+- improve perspective transform performance
+
+notes:
+- ok so it seems like performance bottleneck is basically drawing all the slices of the original image?
+- so I think just drawing on the display canvas won't really help cuz that's just the last step
+- can we maybe figure out if we can use the actual canvas perspective shift API?
+
+
+
 7/13/2024:
 In progress:
 - improve perspective transform display performance

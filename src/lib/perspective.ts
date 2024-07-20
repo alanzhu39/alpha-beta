@@ -34,6 +34,8 @@ type Frame = HTMLImageElement | HTMLVideoElement;
 
 export default class Perspective {
   // Context for destination (output will go here)
+  // This is the canvas we want to end up drawing on
+  // So like display canvas in video scrubber
   private ctxd: CanvasRenderingContext2D;
 
   // Canvas for original image
@@ -48,10 +50,15 @@ export default class Perspective {
     this.image = image;
 
     // prepare a <canvas> for the transformed image
+    // cvst is canvas element
     const cvst = document.createElement('canvas');
     cvst.width = ctxd.canvas.width;
     cvst.height = ctxd.canvas.height;
 
+    // ctxt is context for cvst canvas element
+    // this is where we draw the transformed image
+    // can we just draw directly to ctxd?
+    // instead of having intermediate cvst
     const ctxt = cvst.getContext('2d');
     this.ctxt = ctxt;
   }
@@ -69,16 +76,20 @@ export default class Perspective {
     } = q;
 
     // compute the dimension of each side
+    // compute length of each side
     const dims = [
       Math.sqrt(Math.pow(topLeftX - topRightX, 2) + Math.pow(topLeftY - topRightY, 2)), // top side
       Math.sqrt(Math.pow(topRightX - bottomRightX, 2) + Math.pow(topRightY - bottomRightY, 2)), // right side
       Math.sqrt(Math.pow(bottomRightX - bottomLeftX, 2) + Math.pow(bottomRightY - bottomLeftY, 2)), // bottom side
       Math.sqrt(Math.pow(bottomLeftX - topLeftX, 2) + Math.pow(bottomLeftY - topLeftY, 2)) // left side
     ];
+    // dimensions of the original image
     const ow = this.image.offsetWidth;
     const oh = this.image.offsetHeight;
     // specify the index of which dimension is longest
+    // get index of longest side
     let base_index = 0;
+    // this is the scale rate to the longest transformed side length
     let max_scale_rate = 0;
     let zero_num = 0;
     for (let i = 0; i < 4; i++) {
@@ -96,11 +107,13 @@ export default class Perspective {
         zero_num++;
       }
     }
+    // can't draw the transform if any side has length 0
     if (zero_num > 1) {
       return;
     }
     const step = 2;
     const cover_step = step * 5;
+    // intermediate canvas context
     const ctxt = this.ctxt;
     if (!ctxt) return;
     ctxt.clearRect(0, 0, ctxt.canvas.width, ctxt.canvas.height);
