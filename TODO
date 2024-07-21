@@ -23,6 +23,15 @@ In progress:
   - considering using different libraries for this (not perspectivets since it's hella slow)
   - experimenting with glfx-es6
   - I guess we have to append the display canvas directly if we're rendering the transformed view
+  - uhhh I guess it's kinda working with glfx? may have to smooth some things out in the rendering pipeline still
+    - like pause/play sometimes doesn't work
+    - and also the perspective shift is like very slightly off for some reason?
+    - oh and also you have to use the video dimensions instead of canvas dimensions because the webgl context has those dimensions
+    - maybe that's screwing with it?
+    - check the canvas dimensions on initialization
+    - or can we set video width and height on initialization?
+    - ohh and also I think sometimes the video ref is not initialized when we try to initialize the canvas?
+      - cuz there's like this texture undefined error thingy sometimes
 - allow instagram embed links
   - so I think we can use this python library, make an api endpoint to get video URL from post URL, then use that as video source
 - test on ipad
