@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { default as PerspectiveTransform } from '$lib/perspective';
+  import * as fx from 'glfx-es6';
+  import type { GlfxCanvas, GlfxTexture, GlfxCoordinates } from 'glfx-es6';
   import {
     DrawingUtils,
     FilesetResolver,
@@ -26,11 +27,13 @@
   let videoDuration: number;
   let detectionCanvasRef: HTMLCanvasElement;
   let displayCanvasRef: HTMLCanvasElement;
+  let frameCanvasRef: HTMLCanvasElement;
   let rangeRef: HTMLInputElement;
   let isPlaying = false;
 
   let poseLandmarker: PoseLandmarker;
-  let referenceTransform: Perspective;
+  let referenceTransform: Perspective | null = null;
+  let glfxCanvas: GlfxCanvas;
 
   onMount(async () => {
     const vision = await FilesetResolver.forVisionTasks('@mediapipe/tasks-vision/wasm');
@@ -45,6 +48,12 @@
       numPoses: 1,
       runningMode: 'VIDEO'
     });
+    if (isReference) {
+      glfxCanvas = fx.canvas();
+      glfxCanvas.className = frameCanvasRef.className;
+      frameCanvasRef.replaceWith(glfxCanvas);
+      frameCanvasRef = glfxCanvas;
+    }
   });
 
   $: {
@@ -68,16 +77,10 @@
       videoRef &&
       detectionCanvasRef
     ) {
+      // TODO: draw perspective shifted frame
       const context = displayCanvasRef.getContext('2d');
       if (context) {
-        const perspectiveTransform = new PerspectiveTransform(context, videoRef);
-        drawFrameAsReference(
-          context,
-          videoRef.offsetWidth,
-          videoRef.offsetHeight,
-          perspectiveTransform,
-          false
-        );
+        drawFrameAsReference(context, videoRef.offsetWidth, videoRef.offsetHeight, false);
       }
     }
   }
@@ -110,26 +113,25 @@
 
   const drawFrame = (
     context: CanvasRenderingContext2D,
-    videoWidth: number,
-    videoHeight: number,
-    perspectiveTransform: PerspectiveTransform,
+    frameWidth: number,
+    frameHeight: number,
     detectPose: boolean = true
   ) => {
     if (isReference) {
-      drawFrameAsReference(context, videoWidth, videoHeight, perspectiveTransform, detectPose);
+      drawFrameAsReference(context, frameWidth, frameHeight, detectPose);
     } else {
-      drawFrameAsUser(context, videoWidth, videoHeight, detectPose);
+      drawFrameAsUser(context, frameWidth, frameHeight, detectPose);
     }
   };
 
   const drawFrameAsUser = (
     context: CanvasRenderingContext2D,
-    videoWidth: number,
-    videoHeight: number,
+    frameWidth: number,
+    frameHeight: number,
     detectPose: boolean
   ) => {
     // Just draw the frame
-    context.drawImage(videoRef, 0, 0, videoWidth, videoHeight);
+    context.drawImage(videoRef, 0, 0, frameWidth, frameHeight);
 
     // Draw overlay reference pose
     const drawingUtils = new DrawingUtils(context);
@@ -156,32 +158,39 @@
 
   const drawFrameAsReference = (
     context: CanvasRenderingContext2D,
-    videoWidth: number,
-    videoHeight: number,
-    perspectiveTransform: PerspectiveTransform,
+    frameWidth: number,
+    frameHeight: number,
     detectPose: boolean
   ) => {
-    // Draw frame with perspective shift
-    context.fillRect(0, 0, videoWidth, videoHeight);
+    const texture: GlfxTexture = glfxCanvas.texture(videoRef);
+    const frameContext: GlfxCanvas = glfxCanvas.draw(texture);
 
-    const [topLeft, topRight, bottomRight, bottomLeft] = referenceTransform.map(([x, y]) => [
-      x * videoWidth,
-      y * videoHeight
-    ]);
-    const [topLeftX, topLeftY] = topLeft;
-    const [topRightX, topRightY] = topRight;
-    const [bottomRightX, bottomRightY] = bottomRight;
-    const [bottomLeftX, bottomLeftY] = bottomLeft;
-    perspectiveTransform.draw({
-      topLeftX,
-      topLeftY,
-      topRightX,
-      topRightY,
-      bottomRightX,
-      bottomRightY,
-      bottomLeftX,
-      bottomLeftY
-    });
+    if (referenceTransform) {
+      // Draw frame with perspective shift
+      const videoWidth = videoRef.videoWidth;
+      const videoHeight = videoRef.videoHeight;
+
+      const before: GlfxCoordinates = [
+        0,
+        0,
+        videoWidth,
+        0,
+        videoWidth,
+        videoHeight,
+        0,
+        videoHeight
+      ];
+      const after = referenceTransform.flatMap(([x, y]) => [
+        x * videoWidth,
+        y * videoHeight
+      ]) as GlfxCoordinates;
+      frameContext.perspective(before, after).update();
+    } else {
+      // Draw frame without perspective shift
+      frameContext.update();
+    }
+
+    context.clearRect(0, 0, frameWidth, frameHeight);
 
     // Draw overlay user pose
     const drawingUtils = new DrawingUtils(context);
@@ -189,7 +198,7 @@
 
     // Detect pose
     if (detectPose) {
-      poseLandmarker.detectForVideo(displayCanvasRef, performance.now(), (result) => {
+      poseLandmarker.detectForVideo(frameCanvasRef, performance.now(), (result) => {
         context.save();
         for (const landmark of result.landmarks) {
           // Draw reference pose
@@ -234,11 +243,8 @@
     const canvasHeight = displayCanvasRef.offsetHeight;
     displayCanvasRef.width = canvasWidth;
     displayCanvasRef.height = canvasHeight;
-    const videoWidth = videoRef.offsetWidth;
-    const videoHeight = videoRef.offsetHeight;
-    const perspectiveTransform = new PerspectiveTransform(context, videoRef);
 
-    drawFrame(context, videoWidth, videoHeight, perspectiveTransform);
+    drawFrame(context, canvasWidth, canvasHeight);
   };
 
   const onPlay = () => {
@@ -249,9 +255,6 @@
     const canvasHeight = displayCanvasRef.offsetHeight;
     displayCanvasRef.width = canvasWidth;
     displayCanvasRef.height = canvasHeight;
-    const videoWidth = videoRef.offsetWidth;
-    const videoHeight = videoRef.offsetHeight;
-    const perspectiveTransform = new PerspectiveTransform(context, videoRef);
 
     const start = performance.now();
 
@@ -263,7 +266,7 @@
         return;
       }
 
-      drawFrame(context, videoWidth, videoHeight, perspectiveTransform);
+      drawFrame(context, canvasWidth, canvasHeight);
 
       requestAnimationFrame(() => step(count + 1));
     }
@@ -291,6 +294,7 @@
       <source src={videoSrc} type="video/mp4" />
     </video>
     <canvas class="detection-canvas" bind:this={detectionCanvasRef} />
+    <canvas class="frame-canvas" bind:this={frameCanvasRef} />
     <canvas class="display-canvas" bind:this={displayCanvasRef} />
   </div>
   <div class="controls-container">
@@ -338,7 +342,7 @@
     height: 100%;
   }
 
-  .display-canvas {
+  .frame-canvas {
     position: absolute;
     z-index: 1;
     top: 0;
@@ -347,6 +351,16 @@
     width: 100%;
     height: 100%;
     background-color: black;
+  }
+
+  .display-canvas {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
   }
 
   .controls-container {

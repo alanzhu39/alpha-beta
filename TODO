@@ -5,11 +5,11 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 - prioritization:
-  - synchronize the pose displays better
   - improve perspective transform display performance
-  - add instagram embed links syncing
+  - allow instagram embed links
   - ipad testing
   - make designs prettier
+  - synchronize the pose displays better
   - improve boundary selection process
     - maybe can play around with overlays?
   - improve state persistence/management?
@@ -20,6 +20,12 @@ TODO:
 7/18/2024:
 In progress:
 - improve perspective transform performance
+  - considering using different libraries for this (not perspectivets since it's hella slow)
+  - experimenting with glfx-es6
+  - I guess we have to append the display canvas directly if we're rendering the transformed view
+- allow instagram embed links
+  - so I think we can use this python library, make an api endpoint to get video URL from post URL, then use that as video source
+- test on ipad
 
 notes:
 - ok so it seems like performance bottleneck is basically drawing all the slices of the original image?
