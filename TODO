@@ -17,6 +17,15 @@ TODO:
   - improve code quality
 
 
+7/26/2024:
+In progress:
+- improve perspective transform performance:
+  - smooth out glfx bugs
+- support instagram embed links
+- test on ipad
+
+
+
 7/18/2024:
 In progress:
 - improve perspective transform performance
