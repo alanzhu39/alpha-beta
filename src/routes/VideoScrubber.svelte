@@ -213,13 +213,19 @@
     const context = displayCanvasRef.getContext('2d');
     if (!context) return;
 
-    const frameWidth = videoRef.offsetWidth;
-    const frameHeight = videoRef.offsetHeight;
-    context.clearRect(0, 0, frameWidth, frameHeight);
+    if (isReference) {
+      // For the reference video, just redraw the pose overlay
+      const frameWidth = videoRef.offsetWidth;
+      const frameHeight = videoRef.offsetHeight;
+      context.clearRect(0, 0, frameWidth, frameHeight);
 
-    const drawingUtils = new DrawingUtils(context);
-    drawLandmark(drawingUtils, $userPose, $userPoseColor);
-    drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
+      const drawingUtils = new DrawingUtils(context);
+      drawLandmark(drawingUtils, $userPose, $userPoseColor);
+      drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
+    } else {
+      // For the user video, redraw the whole frame
+      drawFrameAsUser(context, videoRef.offsetWidth, videoRef.offsetHeight, false);
+    }
   };
 
   const onInput = () => {
