@@ -25,17 +25,26 @@
 
   let videoRef: HTMLVideoElement;
   let videoDuration: number;
-  let detectionCanvasRef: HTMLCanvasElement;
-  let displayCanvasRef: HTMLCanvasElement;
-  let frameCanvasRef: HTMLCanvasElement;
   let rangeRef: HTMLInputElement;
   let isPlaying = false;
+
+  // Canvas with the WebGL context used by mediapipe for
+  // doing pose detection in GPU mode
+  let detectionCanvasRef: HTMLCanvasElement;
+
+  // Canvas for drawing the user and reference poses
+  let displayCanvasRef: HTMLCanvasElement;
+
+  // Canvas for drawing the current video frame
+  // Controlled by glfx
+  let frameCanvasRef: HTMLCanvasElement;
 
   let poseLandmarker: PoseLandmarker;
   let referenceTransform: Perspective | null = null;
   let glfxCanvas: GlfxCanvas;
 
   onMount(async () => {
+    // Create pose landmarker
     const vision = await FilesetResolver.forVisionTasks('@mediapipe/tasks-vision/wasm');
     poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
       baseOptions: {
@@ -48,12 +57,23 @@
       numPoses: 1,
       runningMode: 'VIDEO'
     });
-    if (isReference) {
-      glfxCanvas = fx.canvas();
-      glfxCanvas.className = frameCanvasRef.className;
-      frameCanvasRef.replaceWith(glfxCanvas);
-      frameCanvasRef = glfxCanvas;
-    }
+
+    // Create glfx canvas for drawing the video frame
+    glfxCanvas = fx.canvas();
+    glfxCanvas.className = frameCanvasRef.className;
+    frameCanvasRef.replaceWith(glfxCanvas);
+    frameCanvasRef = glfxCanvas;
+
+    // Draw the first frame of the video
+    const context = displayCanvasRef.getContext('2d');
+    if (!context) return;
+
+    const canvasWidth = displayCanvasRef.offsetWidth;
+    const canvasHeight = displayCanvasRef.offsetHeight;
+    displayCanvasRef.width = canvasWidth;
+    displayCanvasRef.height = canvasHeight;
+
+    drawFrame(context, canvasWidth, canvasHeight);
   });
 
   $: {
@@ -108,8 +128,12 @@
     frameHeight: number,
     detectPose: boolean
   ) => {
-    // Just draw the frame
-    context.drawImage(videoRef, 0, 0, frameWidth, frameHeight);
+    // Draw the current frame
+    const texture: GlfxTexture = glfxCanvas.texture(videoRef);
+    const frameContext: GlfxCanvas = glfxCanvas.draw(texture);
+    frameContext.update();
+
+    context.clearRect(0, 0, frameWidth, frameHeight);
 
     // Draw overlay reference pose
     const drawingUtils = new DrawingUtils(context);
@@ -213,19 +237,13 @@
     const context = displayCanvasRef.getContext('2d');
     if (!context) return;
 
-    if (isReference) {
-      // For the reference video, just redraw the pose overlay
-      const frameWidth = videoRef.offsetWidth;
-      const frameHeight = videoRef.offsetHeight;
-      context.clearRect(0, 0, frameWidth, frameHeight);
+    const frameWidth = videoRef.offsetWidth;
+    const frameHeight = videoRef.offsetHeight;
+    context.clearRect(0, 0, frameWidth, frameHeight);
 
-      const drawingUtils = new DrawingUtils(context);
-      drawLandmark(drawingUtils, $userPose, $userPoseColor);
-      drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
-    } else {
-      // For the user video, redraw the whole frame
-      drawFrameAsUser(context, videoRef.offsetWidth, videoRef.offsetHeight, false);
-    }
+    const drawingUtils = new DrawingUtils(context);
+    drawLandmark(drawingUtils, $userPose, $userPoseColor);
+    drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
   };
 
   const onInput = () => {
