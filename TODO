@@ -17,12 +17,17 @@ TODO:
   - improve code quality
 
 
-7/26/2024:
+7/27/2024:
 In progress:
-- improve perspective transform performance:
-  - smooth out glfx bugs
 - support instagram embed links
 - test on ipad
+
+Done:
+- improve perspective transform performance:
+  - smooth out glfx bugs
+  - updated the pose updates logic to be cleaner and just redraw the landmarks themselves (instead of the whole frame)
+  - separating frame and display canvases for user frame as well!
+    - yeah so drawing video frame to frame-canvas in user video
 
 
 
