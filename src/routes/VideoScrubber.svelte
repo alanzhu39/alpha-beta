@@ -70,34 +70,12 @@
 
   $: {
     if (
-      isReference &&
-      $userPose &&
-      !isPlaying &&
-      displayCanvasRef &&
-      videoRef &&
-      detectionCanvasRef
+      // If this is the reference video, the video isn't playing, and the user pose is updated, redraw the landmarks
+      (isReference && $userPose && !isPlaying && displayCanvasRef) ||
+      // If this is the user video, the video isn't playing, and the reference pose is updated, redraw the landmarks
+      (!isReference && $referencePose && !isPlaying && displayCanvasRef)
     ) {
-      // TODO: draw perspective shifted frame
-      const context = displayCanvasRef.getContext('2d');
-      if (context) {
-        drawFrameAsReference(context, videoRef.offsetWidth, videoRef.offsetHeight, false);
-      }
-    }
-  }
-
-  $: {
-    if (
-      !isReference &&
-      $referencePose &&
-      !isPlaying &&
-      displayCanvasRef &&
-      videoRef &&
-      detectionCanvasRef
-    ) {
-      const context = displayCanvasRef.getContext('2d');
-      if (context) {
-        drawFrameAsUser(context, videoRef.offsetWidth, videoRef.offsetHeight, false);
-      }
+      redrawLandmarks();
     }
   }
 
@@ -229,6 +207,19 @@
       lineWidth: 2,
       color
     });
+  };
+
+  const redrawLandmarks = () => {
+    const context = displayCanvasRef.getContext('2d');
+    if (!context) return;
+
+    const frameWidth = videoRef.offsetWidth;
+    const frameHeight = videoRef.offsetHeight;
+    context.clearRect(0, 0, frameWidth, frameHeight);
+
+    const drawingUtils = new DrawingUtils(context);
+    drawLandmark(drawingUtils, $userPose, $userPoseColor);
+    drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
   };
 
   const onInput = () => {
