@@ -14,10 +14,8 @@
     referencePoseColor,
     userPerspective,
     userPose,
-    userPoseColor,
-    type Perspective
+    userPoseColor
   } from './stores';
-  import { calculateTransform } from '$lib';
 
   export let backStep;
   export let videoSrc: string;
@@ -40,7 +38,7 @@
   let frameCanvasRef: HTMLCanvasElement;
 
   let poseLandmarker: PoseLandmarker;
-  let referenceTransform: Perspective | null = null;
+  let referenceTransform: boolean = false;
   let glfxCanvas: GlfxCanvas;
 
   onMount(async () => {
@@ -66,16 +64,17 @@
       frameCanvasRef = glfxCanvas;
     }
 
-    // Draw the first frame of the video
-    const context = displayCanvasRef.getContext('2d');
-    if (!context) return;
-
+    // Set canvas and video dimensions
     const canvasWidth = displayCanvasRef.offsetWidth;
     const canvasHeight = displayCanvasRef.offsetHeight;
     displayCanvasRef.width = canvasWidth;
     displayCanvasRef.height = canvasHeight;
     frameCanvasRef.width = canvasWidth;
     frameCanvasRef.height = canvasHeight;
+
+    // Draw the first frame of the video
+    const context = displayCanvasRef.getContext('2d');
+    if (!context) return;
 
     drawFrame(context, canvasWidth, canvasHeight);
   });
@@ -86,11 +85,7 @@
     }
   }
 
-  $: {
-    if ($referencePerspective && $userPerspective) {
-      referenceTransform = calculateTransform($referencePerspective, $userPerspective);
-    }
-  }
+  $: referenceTransform = !!$referencePerspective && !!$userPerspective;
 
   $: {
     if (
@@ -177,20 +172,16 @@
       const videoWidth = videoRef.videoWidth;
       const videoHeight = videoRef.videoHeight;
 
-      const before: GlfxCoordinates = [
-        0,
-        0,
-        videoWidth,
-        0,
-        videoWidth,
-        videoHeight,
-        0,
-        videoHeight
-      ];
-      const after = referenceTransform.flatMap(([x, y]) => [
+      // Shift reference perspective into the user perspective
+      const before = $referencePerspective.flatMap(([x, y]) => [
         x * videoWidth,
         y * videoHeight
       ]) as GlfxCoordinates;
+      const after = $userPerspective.flatMap(([x, y]) => [
+        x * videoWidth,
+        y * videoHeight
+      ]) as GlfxCoordinates;
+
       frameContext.perspective(before, after).update();
     } else {
       // Draw frame without perspective shift

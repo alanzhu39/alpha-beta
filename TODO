@@ -19,18 +19,23 @@ TODO:
 
 7/27/2024:
 In progress:
-- fix perspective shift with glfx
-  - there's a slight offset on the transformed video?
-  - I'm pretty sure the transform itself is right, but maybe retest it
-    - yeah retested and it still looks fine, so probably not problem with that
-  - and I think maybe can try out just inputting the user and reference pose stores into the perspective directly
-  - then we wouldn't even have to calculate the transform
 - uh fuck and also debugging the first frame drawing on the normal canvas??
   - not working for user pose
 - support instagram embed links
 - test on ipad
 
 Done:
+- fix perspective shift with glfx
+  - yeah so just relying on the perspective transform from glfx instead of doing it ourselves lmao
+  - there's a slight offset on the transformed video?
+  - and also just like figuring out the dimensions of the frame canvas in glfx
+    - mm yeah doing this actually not great, since it actually seems to affect the resolution of the output!
+    - so maybe trying out now just using the user and reference poses directly
+  - and I think maybe can try out just inputting the user and reference pose stores into the perspective directly
+    - poggg this works really well actually
+  - then we wouldn't even have to calculate the transform! yes!
+  - I'm pretty sure the transform itself is right, but maybe retest it
+    - yeah retested and it still looks fine, so probably not problem with that
 - improve perspective transform performance:
   - smooth out glfx bugs
   - updated the pose updates logic to be cleaner and just redraw the landmarks themselves (instead of the whole frame)
