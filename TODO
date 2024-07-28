@@ -14,12 +14,15 @@ TODO:
     - maybe can play around with overlays?
   - improve state persistence/management?
     - so like figuring out going back and forwards and stuff
+    - and also going back to video upload screen
   - improve code quality
 
 
 7/27/2024:
 In progress:
 - support instagram embed links
+  - create API route to call instaloader python library and return video source URL
+  - then use this video source URL as the source inside the video element
 - test on ipad
 
 Done:
