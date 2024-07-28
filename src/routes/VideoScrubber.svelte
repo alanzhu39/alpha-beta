@@ -73,10 +73,7 @@
     frameCanvasRef.height = canvasHeight;
 
     // Draw the first frame of the video
-    const context = displayCanvasRef.getContext('2d');
-    if (!context) return;
-
-    drawFrame(context, canvasWidth, canvasHeight);
+    videoRef.currentTime = 0;
   });
 
   $: {

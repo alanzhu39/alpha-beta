@@ -19,12 +19,18 @@ TODO:
 
 7/27/2024:
 In progress:
-- uh fuck and also debugging the first frame drawing on the normal canvas??
-  - not working for user pose
 - support instagram embed links
 - test on ipad
 
 Done:
+- uh fuck and also debugging the first frame drawing on the normal canvas??
+  - what's working for me is just seeking to currenttime = 0 lmao which triggers the onSeek frame draw. nice!
+  - not working for user pose
+  - uhh so I guess maybe looking at the video ref and why it's not showing up?
+  - uh ok so when stepping, it seems the video is drawn on the frame...
+  - but maybe sometimes the video ref is still null?
+  - yeah idk wtf the actual cause is lol
+    - but seems other people have similar issue
 - fix perspective shift with glfx
   - yeah so just relying on the perspective transform from glfx instead of doing it ourselves lmao
   - there's a slight offset on the transformed video?
