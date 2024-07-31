@@ -18,12 +18,50 @@ TODO:
   - improve code quality
 
 
+7/30/2024:
+In progress:
+- support instagram embed links
+  - create API route to call instaloader python library and return video source URL
+  - then use this video source URL as the source inside the video element
+  - so yeah tested out py2wasm compiler, didn't really work great (unless I used wasmer runtime)
+    - and even then it like couldn't take the argument that I wanted lol
+  - so thinking about just doing the API route version and using node child_process?
+    - will need to do sanitization on the video URL input.
+    - I think on client will just strip the query params, and on server will make sure it's only:
+      - [a-zA-Z:/] characters, shouldn't need query params for the actual post URLs
+  - plan B is embedding pyodide on browser and just straight executing script on the client
+- test on ipad
+
+
+
 7/27/2024:
 In progress:
 - support instagram embed links
   - create API route to call instaloader python library and return video source URL
   - then use this video source URL as the source inside the video element
 - test on ipad
+
+notes:
+- learned about some GCC linker flags I guess?
+- also learned about python to wasm compilation
+  - lowkey basically hard/impossible to *translate* python (dynamically typed language) to C?
+  - interpreting it is easy I guess? cuz you can simulate its runtime model easily with a language like C?
+  - so the best ideas for porting python to other languages is to port the entire CPython library itself lmao
+  - or at least specifically like for the web (WASM, JS), you just transpile CPython to wasm since C is easier to convert to wasm which is basically a kind of assembly lanuage
+  - and so py2wasm is python -> C (nuitka) -> wasm (emscripten)?
+  - and I guess python -> C is the harder part
+  - but also it was trying to get me to link the generated C program somehow that was breaking
+- wasm-ld is a wasm-specific linker
+- getting exposed to some wasm ideas? but definitely a lot more to learn
+  - also it's not the same as asm.js
+- gcc linker args are comma separated after -Wl
+- rpath is like the path you look for library files (I guess like stdlib and other stuff) to link w your C program
+- $ORIGIN is like linux specific and points to the origin of your compilation or something?
+- tried out claude, the responses seem slightly better than chatgpt, but lowkey UI is worse?
+  - I might be a gemini glazer
+  - use LLMs more for questions actually!
+- --disable-new-dtags: something about dynamic tags in ELF binaries?
+  - I remember seeing something about ELF binaries in tsoding video, just like a common binary format for linux platforms?
 
 Done:
 - uh fuck and also debugging the first frame drawing on the normal canvas??
