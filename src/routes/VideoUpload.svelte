@@ -3,33 +3,49 @@
 
   export let nextStep;
   export let videoSrc: string;
+  let pyodideWorker: Worker;
+  let postUrlInput = '';
 
   onMount(async () => {
     const PyodideWorker = await import('$lib/pyodide.worker?worker');
-    const pyodideWorker = new PyodideWorker.default();
+    pyodideWorker = new PyodideWorker.default();
     pyodideWorker.onmessage = (event) => {
       console.log(event.data);
     };
-    pyodideWorker.postMessage('1 + 1');
   });
 
-  const onChange = (e: Event) => {
+  const onUpload = (e: Event) => {
     const target = e.target as HTMLInputElement;
     if (target.files) videoSrc = URL.createObjectURL(target.files[0]);
     nextStep();
+  };
+
+  const onSubmitUrl = () => {
+    // process postUrlInput to extract post shortcode
+    const { pathname } = new URL(postUrlInput);
+    const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
+    const shortcode = pathnameSegments[pathnameSegments.length - 1];
+    pyodideWorker.postMessage(shortcode);
   };
 </script>
 
 <div class="container">
   <label class="video-label">
     Upload
-    <input type="file" class="video-input" on:change={onChange} />
+    <input type="file" class="video-input" on:change={onUpload} />
   </label>
+  or
+  <div>
+    <input placeholder="Instagram post URL" bind:value={postUrlInput} />
+    <button on:click={onSubmitUrl}>Submit</button>
+  </div>
 </div>
 
 <style>
   .container {
     display: flex;
+    flex-direction: column;
+    gap: 15px;
     align-items: center;
     justify-content: center;
     width: 100%;
