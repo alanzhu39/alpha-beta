@@ -28,8 +28,15 @@ In progress:
   - so thinking about just doing the API route version and using node child_process?
     - will need to do sanitization on the video URL input.
     - I think on client will just strip the query params, and on server will make sure it's only:
-      - [a-zA-Z:/] characters, shouldn't need query params for the actual post URLs
+      - [a-zA-Z:/\-] characters, shouldn't need query params for the actual post URLs
+  - err ok so we don't have python in the netlify function X fucking D
+  - fucking aws lambda wrapper companies, so shit
+  - like literally why tf do you exist
+  - also tried compiling my python to JS but no tools that can automatically do the library I think
   - plan B is embedding pyodide on browser and just straight executing script on the client
+  - guess we go for this
+  - so, run pyodide in a web worker on page load, and also install instaloader
+  - then we execute the script that we want (very simple) via the web worker as well
 - test on ipad
 
 

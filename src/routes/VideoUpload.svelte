@@ -1,6 +1,17 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   export let nextStep;
   export let videoSrc: string;
+
+  onMount(async () => {
+    const PyodideWorker = await import('$lib/pyodide.worker?worker');
+    const pyodideWorker = new PyodideWorker.default();
+    pyodideWorker.onmessage = (event) => {
+      console.log(event.data);
+    };
+    pyodideWorker.postMessage('1 + 1');
+  });
 
   const onChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
