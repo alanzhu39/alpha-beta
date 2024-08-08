@@ -1,6 +1,6 @@
-import { loadPyodide } from 'pyodide';
+import { loadPyodide, type PyodideInterface } from 'pyodide';
 
-let pyodide;
+let pyodide: PyodideInterface;
 async function loadPyodideAndPackages() {
   console.log('Loading pyodide...');
   pyodide = await loadPyodide({
@@ -16,7 +16,7 @@ async function loadPyodideAndPackages() {
 }
 const pyodideReadyPromise = loadPyodideAndPackages();
 
-const getScript = (postUrl) => `
+const getScript = (postUrl: string) => `
   from instaloader import *
   L = instaloader.Instaloader()
   post = Post.from_shortcode(L.context, '${postUrl}')

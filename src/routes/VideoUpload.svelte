@@ -1,18 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { env } from '$env/dynamic/public';
 
   export let nextStep;
   export let videoSrc: string;
-  let pyodideWorker: Worker;
   let postUrlInput = '';
-
-  onMount(async () => {
-    const PyodideWorker = await import('$lib/pyodide.worker?worker');
-    pyodideWorker = new PyodideWorker.default();
-    pyodideWorker.onmessage = (event) => {
-      console.log(event.data);
-    };
-  });
 
   const onUpload = (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -20,12 +11,12 @@
     nextStep();
   };
 
-  const onSubmitUrl = () => {
+  const onSubmitUrl = async () => {
     // process postUrlInput to extract post shortcode
     const { pathname } = new URL(postUrlInput);
     const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
     const shortcode = pathnameSegments[pathnameSegments.length - 1];
-    pyodideWorker.postMessage(shortcode);
+    const res = await fetch(``);
   };
 </script>
 

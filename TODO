@@ -18,6 +18,28 @@ TODO:
   - improve code quality
 
 
+8/8/2024:
+In progress:
+- support instagram embed links:
+  - using separate backend service
+  - still haven't found the cheapest hosting option, but render should be an ok free system for testing
+
+
+
+8/5/2024:
+In progress:
+- support instagram embed links:
+  - trying to add pyodide to run the script in a web worker
+  - unfortunately, it seems actually like it doesn't let us send the XML requests to the instagram API?
+  - due to cors errors
+  - and I don't think there's any way to disable this from the app?
+    - since it's a browser protection
+  - ok new solution:
+    - create full-fledged new API flask service to serve the post loader endpoint
+    - could maybe even convert this to an actual app haha
+
+
+
 7/30/2024:
 In progress:
 - support instagram embed links
