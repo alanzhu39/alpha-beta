@@ -1,22 +1,18 @@
-# create-svelte
+# AlphaBeta
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+Make your beta more alpha.
 
-## Creating a project
+## Setup
 
-If you're seeing this, you've probably already done this step. Congrats!
+Install dependencies. You should be using Node v20.14.0.
 
 ```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
+npm install
 ```
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Start the development server.
 
 ```bash
 npm run dev
@@ -27,12 +23,19 @@ npm run dev -- --open
 
 ## Building
 
-To create a production version of your app:
+Create a production build. The app should be build using `@sveltejs/adapter-node`.
 
 ```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+## Deploying
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+Deploy to a Node server.
+
+```bash
+node build
+
+# to include environment variable definitions
+node --env-file=.env build
+```
