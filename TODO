@@ -23,6 +23,17 @@ In progress:
 - support instagram embed links:
   - using separate backend service
   - still haven't found the cheapest hosting option, but render should be an ok free system for testing
+  - yeahhh so running into more issues with each of these options we're testing:
+    - render blocks outbound requests to instagram.com LOL
+    - ploomber is just broken
+  - I think honestly the best bet is to just host the whole frickin app on the raspberry pi
+  - then we can even just use the API route. big
+  - uhhhh we might have a problem getting it to serve from a static IP though?
+    - hmm can look into using duckdns for free dynamic dns
+    - I think we just set up a cron job to register the current IP daily to our chosen hostname?
+    - or some other free dns service
+    - poggg
+  - nahh so basically just tunneling this via cloudflare
 
 
 

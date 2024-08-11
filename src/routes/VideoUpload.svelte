@@ -16,7 +16,8 @@
     const { pathname } = new URL(postUrlInput);
     const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
     const shortcode = pathnameSegments[pathnameSegments.length - 1];
-    const res = await fetch(``);
+    const res = await fetch(`${env.PUBLIC_API_URL}/api/${shortcode}`);
+    console.log(res);
   };
 </script>
 
