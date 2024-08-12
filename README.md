@@ -4,7 +4,7 @@ Make your beta more alpha.
 
 ## Setup
 
-Install dependencies. You should be using Node v20.14.0.
+Install dependencies.
 
 ```bash
 npm install
@@ -37,5 +37,7 @@ Deploy to a Node server.
 node build
 
 # to include environment variable definitions
+node -r dotenv/config build
+# for Node v20.6+
 node --env-file=.env build
 ```
