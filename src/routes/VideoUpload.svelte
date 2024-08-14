@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { env } from '$env/dynamic/public';
-
   export let nextStep;
   export let videoSrc: string;
   let postUrlInput = '';
@@ -16,8 +14,8 @@
     const { pathname } = new URL(postUrlInput);
     const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
     const shortcode = pathnameSegments[pathnameSegments.length - 1];
-    const res = await fetch(`${env.PUBLIC_API_URL}/api/${shortcode}`);
-    console.log(res);
+    const res = await fetch(`/api/instagram?shortcode=${shortcode}`);
+    console.log(await res.text());
   };
 </script>
 
