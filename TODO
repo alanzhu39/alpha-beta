@@ -18,6 +18,27 @@ TODO:
   - improve code quality
 
 
+8/14/2024:
+In progress:
+- ok so did some investigation yesterday, and like over the weekend
+- I guess instaloader is using the graph endpoint which fetches the video metadata in a specific graphql query
+  - see https://github.com/instaloader/instaloader/blob/e159065799ee4a1813185095bc4b663a1073fe3c/instaloader/structures.py#L320
+  - this is the method that populates the metadata that is then read for the video_url property
+- I was able to find this same video source URL using the search params: /?__a=1&__d=dis
+  - but I heard you'll also get rate limited on this
+  - so I think the idea will just be, create a method for each method, and then wrap each in a try-catch
+    so you can fall back to the next one if the first one is rate limited
+  - ordering in order of like reliability
+- uhhh ok so it looks like instaloader went back to working for me lol
+  - I think it definitely does seem like that graphql /query endpoint is meant to serve these logged-out external requests
+  - I think the problem will just be dealing with rate limits if we have to
+  - maybe even the Philz was banned lmao?
+  - but yeah have some ideas for getting the rate limiting if we have to, namely maybe adding some more fields to the query request
+    using the curls that I grabbed.
+  - and seeing if we can reverse engineer anything out of the API calls that are done to show the public posts
+
+
+
 8/8/2024:
 In progress:
 - support instagram embed links:
