@@ -18,6 +18,15 @@ TODO:
   - improve code quality
 
 
+TODO:
+- test, finalize, and merge in instagram embedding changes
+- raspberry pi deployment
+  - rebased off of instagram changes
+- make designs prettier
+- ipad testing
+
+
+
 8/14/2024:
 In progress:
 - ok so did some investigation yesterday, and like over the weekend
@@ -36,6 +45,9 @@ In progress:
   - but yeah have some ideas for getting the rate limiting if we have to, namely maybe adding some more fields to the query request
     using the curls that I grabbed.
   - and seeing if we can reverse engineer anything out of the API calls that are done to show the public posts
+
+Done:
+- support instagram embed links:
 
 
 
