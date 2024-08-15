@@ -13,7 +13,7 @@ export async function GET({ url }: { url: URL }) {
   }
 
   // Sanitize shortcode input to remove any characters that are not in [a-zA-Z-]
-  const sanitizedShortcode = shortcode.replace(/[^a-zA-Z-]/g, '');
+  const sanitizedShortcode = shortcode.replace(/[^a-zA-Z-_]/g, '');
 
   // Call Python script
   try {
