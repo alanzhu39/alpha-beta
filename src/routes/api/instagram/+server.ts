@@ -13,17 +13,17 @@ export async function GET({ url }: { url: URL }) {
   }
 
   // Sanitize shortcode input to remove any characters that are not in [a-zA-Z-]
-  const sanitizedShortcode = shortcode.replace(/[^a-zA-Z-_]/g, '');
+  const sanitizedShortcode = shortcode.replace(/[^a-zA-Z0-9-_]/g, '');
 
   // Call Python script
   try {
     const videoUrl = execSync(`python3 python/post_to_src.py ${sanitizedShortcode}`);
     return new Response(videoUrl);
-  } catch (err) {
-    if (err instanceof Error) {
-      error(500, err.message);
-    } else {
-      error(500, 'Failed to retrieve video URL');
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    console.error(err.stdout.toString());
+    console.error(err.stderr.toString());
+    console.error(err.ouput.map(toString));
+    error(500, err.message);
   }
 }
