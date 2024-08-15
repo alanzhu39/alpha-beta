@@ -14,8 +14,13 @@
     const { pathname } = new URL(postUrlInput);
     const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
     const shortcode = pathnameSegments[pathnameSegments.length - 1];
-    const res = await fetch(`/api/instagram?shortcode=${shortcode}`);
-    console.log(await res.text());
+    try {
+      const res = await fetch(`/api/instagram?shortcode=${shortcode}`);
+      videoSrc = await res.text();
+      nextStep();
+    } catch (err) {
+      console.error(err);
+    }
   };
 </script>
 

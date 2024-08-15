@@ -286,6 +286,7 @@
     <video
       class="user-video"
       muted
+      crossorigin="anonymous"
       bind:this={videoRef}
       bind:duration={videoDuration}
       on:play={onPlay}
