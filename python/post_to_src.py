@@ -13,7 +13,15 @@ def main(shortcode):
     max_connection_attempts=2
   )
   post = Post.from_shortcode(L.context, shortcode)
-  return post.video_url
+  if post.video_url:
+    return post.video_url
+  
+  sidecar_nodes = post.get_sidecar_nodes()
+  for node in sidecar_nodes:
+    if node.video_url:
+      return node.video_url
+  
+  return None
 
 if __name__ == '__main__':
   # Get shortcode from args

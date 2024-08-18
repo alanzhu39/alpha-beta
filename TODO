@@ -5,7 +5,6 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 - prioritization:
-  - improve perspective transform display performance
   - allow instagram embed links
   - ipad testing
   - make designs prettier
@@ -15,14 +14,31 @@ TODO:
   - improve state persistence/management?
     - so like figuring out going back and forwards and stuff
     - and also going back to video upload screen
+    - loading and error case handling
   - improve code quality
 
+- done:
+  - improve perspective transform display performance:
+    - switched to glfx implementation
+    - PR: https://github.com/alanzhu39/alpha-beta/pull/1
 
-TODO:
+
+8/18/2024
+In progress:
 - test, finalize, and merge in instagram embedding changes
+  - testing some actual beta videos: it works!!!
+  - also adding edge case where the videos are in sidecar format (eg. slideshow videos)
+  - basically just taking the first video_url that exists
+  - also have to sort out a bug with the image aspect ratio being weird (eg. square videos)
 - raspberry pi deployment
   - rebased off of instagram changes
 - make designs prettier
+  - use rectangle drawing for making box instead of doing point-by-point?
+  - makes it easier to line up the edges of the board
+  - also more intuitive on ipad I think?
+    - tapping multiple times is less comfortable than just dragging the points
+- loading, failure, and more state change cases?
+  - like, going between pages in the sequences
 - ipad testing
 
 
