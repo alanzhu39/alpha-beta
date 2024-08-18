@@ -14,10 +14,8 @@
     referencePoseColor,
     userPerspective,
     userPose,
-    userPoseColor,
-    type Perspective
+    userPoseColor
   } from './stores';
-  import { calculateTransform } from '$lib';
 
   export let backStep;
   export let videoSrc: string;
@@ -25,17 +23,26 @@
 
   let videoRef: HTMLVideoElement;
   let videoDuration: number;
-  let detectionCanvasRef: HTMLCanvasElement;
-  let displayCanvasRef: HTMLCanvasElement;
-  let frameCanvasRef: HTMLCanvasElement;
   let rangeRef: HTMLInputElement;
   let isPlaying = false;
 
+  // Canvas with the WebGL context used by mediapipe for
+  // doing pose detection in GPU mode
+  let detectionCanvasRef: HTMLCanvasElement;
+
+  // Canvas for drawing the user and reference poses
+  let displayCanvasRef: HTMLCanvasElement;
+
+  // Canvas for drawing the current video frame
+  // Controlled by glfx
+  let frameCanvasRef: HTMLCanvasElement;
+
   let poseLandmarker: PoseLandmarker;
-  let referenceTransform: Perspective | null = null;
+  let referenceTransform: boolean = false;
   let glfxCanvas: GlfxCanvas;
 
   onMount(async () => {
+    // Create pose landmarker
     const vision = await FilesetResolver.forVisionTasks('@mediapipe/tasks-vision/wasm');
     poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
       baseOptions: {
@@ -48,12 +55,25 @@
       numPoses: 1,
       runningMode: 'VIDEO'
     });
+
     if (isReference) {
+      // Create glfx canvas for drawing perspective shift in reference video
       glfxCanvas = fx.canvas();
       glfxCanvas.className = frameCanvasRef.className;
       frameCanvasRef.replaceWith(glfxCanvas);
       frameCanvasRef = glfxCanvas;
     }
+
+    // Set canvas and video dimensions
+    const canvasWidth = displayCanvasRef.offsetWidth;
+    const canvasHeight = displayCanvasRef.offsetHeight;
+    displayCanvasRef.width = canvasWidth;
+    displayCanvasRef.height = canvasHeight;
+    frameCanvasRef.width = canvasWidth;
+    frameCanvasRef.height = canvasHeight;
+
+    // Draw the first frame of the video
+    videoRef.currentTime = 0;
   });
 
   $: {
@@ -62,42 +82,16 @@
     }
   }
 
-  $: {
-    if ($referencePerspective && $userPerspective) {
-      referenceTransform = calculateTransform($referencePerspective, $userPerspective);
-    }
-  }
+  $: referenceTransform = !!$referencePerspective && !!$userPerspective;
 
   $: {
     if (
-      isReference &&
-      $userPose &&
-      !isPlaying &&
-      displayCanvasRef &&
-      videoRef &&
-      detectionCanvasRef
+      // If this is the reference video, the video isn't playing, and the user pose is updated, redraw the landmarks
+      (isReference && $userPose && !isPlaying && displayCanvasRef) ||
+      // If this is the user video, the video isn't playing, and the reference pose is updated, redraw the landmarks
+      (!isReference && $referencePose && !isPlaying && displayCanvasRef)
     ) {
-      // TODO: draw perspective shifted frame
-      const context = displayCanvasRef.getContext('2d');
-      if (context) {
-        drawFrameAsReference(context, videoRef.offsetWidth, videoRef.offsetHeight, false);
-      }
-    }
-  }
-
-  $: {
-    if (
-      !isReference &&
-      $referencePose &&
-      !isPlaying &&
-      displayCanvasRef &&
-      videoRef &&
-      detectionCanvasRef
-    ) {
-      const context = displayCanvasRef.getContext('2d');
-      if (context) {
-        drawFrameAsUser(context, videoRef.offsetWidth, videoRef.offsetHeight, false);
-      }
+      redrawLandmarks();
     }
   }
 
@@ -112,35 +106,40 @@
   };
 
   const drawFrame = (
-    context: CanvasRenderingContext2D,
+    poseContext: CanvasRenderingContext2D,
     frameWidth: number,
     frameHeight: number,
     detectPose: boolean = true
   ) => {
     if (isReference) {
-      drawFrameAsReference(context, frameWidth, frameHeight, detectPose);
+      drawFrameAsReference(poseContext, frameWidth, frameHeight, detectPose);
     } else {
-      drawFrameAsUser(context, frameWidth, frameHeight, detectPose);
+      drawFrameAsUser(poseContext, frameWidth, frameHeight, detectPose);
     }
   };
 
   const drawFrameAsUser = (
-    context: CanvasRenderingContext2D,
+    poseContext: CanvasRenderingContext2D,
     frameWidth: number,
     frameHeight: number,
     detectPose: boolean
   ) => {
-    // Just draw the frame
-    context.drawImage(videoRef, 0, 0, frameWidth, frameHeight);
+    const frameContext = frameCanvasRef.getContext('2d');
+    if (!frameContext) return;
+
+    // Draw the current frame
+    frameContext.drawImage(videoRef, 0, 0, frameWidth, frameHeight);
+
+    poseContext.clearRect(0, 0, frameWidth, frameHeight);
 
     // Draw overlay reference pose
-    const drawingUtils = new DrawingUtils(context);
+    const drawingUtils = new DrawingUtils(poseContext);
     drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
 
     // Detect pose
     if (detectPose) {
       poseLandmarker.detectForVideo(videoRef, performance.now(), (result) => {
-        context.save();
+        poseContext.save();
         for (const landmark of result.landmarks) {
           // Draw user pose
           drawLandmark(drawingUtils, landmark, $userPoseColor);
@@ -148,7 +147,7 @@
           // update poseStore
           $userPose = landmark;
         }
-        context.restore();
+        poseContext.restore();
       });
     } else {
       // Just draw user pose
@@ -157,7 +156,7 @@
   };
 
   const drawFrameAsReference = (
-    context: CanvasRenderingContext2D,
+    poseContext: CanvasRenderingContext2D,
     frameWidth: number,
     frameHeight: number,
     detectPose: boolean
@@ -170,36 +169,32 @@
       const videoWidth = videoRef.videoWidth;
       const videoHeight = videoRef.videoHeight;
 
-      const before: GlfxCoordinates = [
-        0,
-        0,
-        videoWidth,
-        0,
-        videoWidth,
-        videoHeight,
-        0,
-        videoHeight
-      ];
-      const after = referenceTransform.flatMap(([x, y]) => [
+      // Shift reference perspective into the user perspective
+      const before = $referencePerspective.flatMap(([x, y]) => [
         x * videoWidth,
         y * videoHeight
       ]) as GlfxCoordinates;
+      const after = $userPerspective.flatMap(([x, y]) => [
+        x * videoWidth,
+        y * videoHeight
+      ]) as GlfxCoordinates;
+
       frameContext.perspective(before, after).update();
     } else {
       // Draw frame without perspective shift
       frameContext.update();
     }
 
-    context.clearRect(0, 0, frameWidth, frameHeight);
+    poseContext.clearRect(0, 0, frameWidth, frameHeight);
 
     // Draw overlay user pose
-    const drawingUtils = new DrawingUtils(context);
+    const drawingUtils = new DrawingUtils(poseContext);
     drawLandmark(drawingUtils, $userPose, $userPoseColor);
 
     // Detect pose
     if (detectPose) {
       poseLandmarker.detectForVideo(frameCanvasRef, performance.now(), (result) => {
-        context.save();
+        poseContext.save();
         for (const landmark of result.landmarks) {
           // Draw reference pose
           drawLandmark(drawingUtils, landmark, $referencePoseColor);
@@ -207,7 +202,7 @@
           // update poseStore
           $referencePose = landmark;
         }
-        context.restore();
+        poseContext.restore();
       });
     } else {
       // Just draw reference pose
@@ -231,6 +226,19 @@
     });
   };
 
+  const redrawLandmarks = () => {
+    const context = displayCanvasRef.getContext('2d');
+    if (!context) return;
+
+    const frameWidth = videoRef.offsetWidth;
+    const frameHeight = videoRef.offsetHeight;
+    context.clearRect(0, 0, frameWidth, frameHeight);
+
+    const drawingUtils = new DrawingUtils(context);
+    drawLandmark(drawingUtils, $userPose, $userPoseColor);
+    drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
+  };
+
   const onInput = () => {
     videoRef.currentTime = parseFloat(rangeRef.value);
   };
@@ -239,12 +247,7 @@
     const context = displayCanvasRef.getContext('2d');
     if (!context) return;
 
-    const canvasWidth = displayCanvasRef.offsetWidth;
-    const canvasHeight = displayCanvasRef.offsetHeight;
-    displayCanvasRef.width = canvasWidth;
-    displayCanvasRef.height = canvasHeight;
-
-    drawFrame(context, canvasWidth, canvasHeight);
+    drawFrame(context, displayCanvasRef.offsetWidth, displayCanvasRef.offsetHeight);
   };
 
   const onPlay = () => {
@@ -253,8 +256,6 @@
 
     const canvasWidth = displayCanvasRef.offsetWidth;
     const canvasHeight = displayCanvasRef.offsetHeight;
-    displayCanvasRef.width = canvasWidth;
-    displayCanvasRef.height = canvasHeight;
 
     const start = performance.now();
 

@@ -139,23 +139,17 @@ export function applyTransformToPose(pose: NormalizedLandmark[], transform: Pers
   });
 }
 
-function perspectivesEqual(p1: Perspective, p2: Perspective) {
-  const [[a1x, a1y], [b1x, b1y], [c1x, c1y], [d1x, d1y]] = p1;
-  const [[a2x, a2y], [b2x, b2y], [c2x, c2y], [d2x, d2y]] = p2;
-  return (
-    a1x === a2x &&
-    a1y === a2y &&
-    b1x === b2x &&
-    b1y === b2y &&
-    c1x === c2x &&
-    c1y === c2y &&
-    d1x === d2x &&
-    d1y === d2y
-  );
+function approxEq(a: number, b: number) {
+  return Math.abs(a - b) < 0.001;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function test() {
+function perspectivesEqual(p1: Perspective, p2: Perspective) {
+  const a = p1.flat();
+  const b = p2.flat();
+  return a.every((v, i) => approxEq(v, b[i]));
+}
+
+function testSameSourceAndDest(): boolean {
   const source_coords = [
     [0.1, 0.1],
     [0.9, 0.1],
@@ -175,10 +169,44 @@ function test() {
     [0.0, 1.0]
   ] as Perspective;
   const same_coords_actual_output = calculateTransform(source_coords, dest_coords);
-  console.log(same_coords_actual_output, same_coords_expected_output);
-  console.log(
-    perspectivesEqual(same_coords_actual_output, same_coords_expected_output)
-      ? 'success'
-      : 'failure'
-  );
+  console.log('Same coords test:');
+  console.log('Expected:');
+  console.table(same_coords_expected_output);
+  console.log('Actual:');
+  console.table(same_coords_actual_output);
+  return perspectivesEqual(same_coords_actual_output, same_coords_expected_output);
+}
+
+function testSimpleScaling(): boolean {
+  const source_coords = [
+    [0.1, 0.1],
+    [0.9, 0.1],
+    [0.9, 0.9],
+    [0.1, 0.9]
+  ] as Perspective;
+  const dest_coords = [
+    [0.3, 0.3],
+    [0.7, 0.3],
+    [0.7, 0.7],
+    [0.3, 0.7]
+  ] as Perspective;
+  const expected_output = [
+    [0.25, 0.25],
+    [0.75, 0.25],
+    [0.75, 0.75],
+    [0.25, 0.75]
+  ] as Perspective;
+  const actual_output = calculateTransform(source_coords, dest_coords);
+  console.log('Simple scaling test:');
+  console.log('Expected:');
+  console.table(expected_output);
+  console.log('Actual:');
+  console.table(actual_output);
+  return perspectivesEqual(actual_output, expected_output);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function test() {
+  console.log(testSameSourceAndDest() ? 'success' : 'failure');
+  console.log(testSimpleScaling() ? 'success' : 'failure');
 }
