@@ -15,6 +15,9 @@ TODO:
     - so like figuring out going back and forwards and stuff
     - and also going back to video upload screen
     - loading and error case handling
+  - store video source URLs, and application state, in local storage, so if you refresh the page,
+    you won't lose your spot
+  - resive observers? for screen sizing which kinda booms the canvases as well
   - improve code quality
 
 - done:
@@ -30,6 +33,11 @@ In progress:
   - also adding edge case where the videos are in sidecar format (eg. slideshow videos)
   - basically just taking the first video_url that exists
   - also have to sort out a bug with the image aspect ratio being weird (eg. square videos)
+  - uhh ok, so I think we want to have the reference video size match the user video size, if it exists
+  - or more like, the reference canvas size. we don't really care about the video size, actually,
+    because we're just using the canvas for the display
+  - uhh ok also yeah, just realized <video> element is default display inline, which is why it wasn't obeying all my block sizing
+    - lmfao. with display block it becomes ez
 - raspberry pi deployment
   - rebased off of instagram changes
 - make designs prettier

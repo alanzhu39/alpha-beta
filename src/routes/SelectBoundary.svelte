@@ -100,15 +100,20 @@
 
   .video-container {
     position: relative;
-    justify-self: center;
+    justify-self: stretch;
     align-self: stretch;
     min-width: 0;
     min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .user-video {
+    display: block;
     max-width: 100%;
     max-height: 100%;
+    z-index: 0;
   }
 
   .video-canvas {
