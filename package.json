@@ -36,8 +36,6 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.14",
     "glfx-es6": "^0.0.3",
-    "patch-package": "^8.0.0",
-    "perspectivets": "^2.0.0",
-    "pyodide": "^0.26.2"
+    "patch-package": "^8.0.0"
   }
 }
