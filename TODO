@@ -29,7 +29,7 @@ TODO:
 8/20/2024:
 In progress:
 - raspberry pi deployment
-  - update readme with build scripts
+  - update scripts with systemd setups
 - update designs
 - update boundary selection UI
 - allow going back to video upload state
@@ -43,6 +43,8 @@ cloudflare notes:
 
 Done:
 - fix bugs for continuing playback while one video has ended
+- raspberry pi deployment
+  - update readme with build scripts
 
 
 
