@@ -29,6 +29,7 @@ TODO:
 8/20/2024:
 In progress:
 - raspberry pi deployment
+  - update readme with build scripts
 - update designs
 - update boundary selection UI
 - allow going back to video upload state
