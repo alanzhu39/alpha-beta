@@ -41,3 +41,11 @@ node -r dotenv/config build
 # for Node v20.6+
 node --env-file=.env build
 ```
+
+Using deployment scripts.
+
+```bash
+scripts/setup.sh
+
+scripts/run.sh
+```
