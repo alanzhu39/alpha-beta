@@ -5,7 +5,6 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 - prioritization:
-  - improve perspective transform display performance
   - allow instagram embed links
   - ipad testing
   - make designs prettier
@@ -14,13 +13,174 @@ TODO:
     - maybe can play around with overlays?
   - improve state persistence/management?
     - so like figuring out going back and forwards and stuff
+    - and also going back to video upload screen
+    - loading and error case handling
+  - store video source URLs, and application state, in local storage, so if you refresh the page,
+    you won't lose your spot
+  - resive observers? for screen sizing which kinda booms the canvases as well
   - improve code quality
+
+- done:
+  - improve perspective transform display performance:
+    - switched to glfx implementation
+    - PR: https://github.com/alanzhu39/alpha-beta/pull/1
+
+
+8/20/2024:
+In progress:
+- raspberry pi deployment
+- update designs
+- update boundary selection UI
+- allow going back to video upload state
+- ipad testing
+- allow local storage state persistence
+
+Done:
+- fix bugs for continuing playback while one video has ended
+
+
+
+8/18/2024
+In progress:
+- test, finalize, and merge in instagram embedding changes
+  - testing some actual beta videos: it works!!!
+  - also adding edge case where the videos are in sidecar format (eg. slideshow videos)
+  - basically just taking the first video_url that exists
+  - also have to sort out a bug with the image aspect ratio being weird (eg. square videos)
+  - uhh ok, so I think we want to have the reference video size match the user video size, if it exists
+  - or more like, the reference canvas size. we don't really care about the video size, actually,
+    because we're just using the canvas for the display
+  - uhh ok also yeah, just realized <video> element is default display inline, which is why it wasn't obeying all my block sizing
+    - lmfao. with display block it becomes ez
+  - uhh ok, so for boundary selection we want to allow the canvas to stretch into the whole video-container div
+  - but, for video scrubbing, we actually want the canvas to just be the same size as the video?
+  - uhhh ok so canvas has its own coordinates, and that's what we're setting with the width and height attributes on the canvas element
+    - glfx canvas is not letting me set the coordinates on that element actually, so we might have to work around that?
+  - buuut, we actually can set the css styling sizes, via canvasRef.style.width/height. so that's what we want to use for sizing,
+    and lining things up
+  - set canvas style/offset width/height to video offset width/height
+  - set canvas width and height to video size?
+- raspberry pi deployment
+  - rebased off of instagram changes
+- make designs prettier
+  - use rectangle drawing for making box instead of doing point-by-point?
+  - makes it easier to line up the edges of the board
+  - also more intuitive on ipad I think?
+    - tapping multiple times is less comfortable than just dragging the points
+- loading, failure, and more state change cases?
+  - like, going between pages in the sequences
+- ipad testing
+
+
+
+8/14/2024:
+In progress:
+- ok so did some investigation yesterday, and like over the weekend
+- I guess instaloader is using the graph endpoint which fetches the video metadata in a specific graphql query
+  - see https://github.com/instaloader/instaloader/blob/e159065799ee4a1813185095bc4b663a1073fe3c/instaloader/structures.py#L320
+  - this is the method that populates the metadata that is then read for the video_url property
+- I was able to find this same video source URL using the search params: /?__a=1&__d=dis
+  - but I heard you'll also get rate limited on this
+  - so I think the idea will just be, create a method for each method, and then wrap each in a try-catch
+    so you can fall back to the next one if the first one is rate limited
+  - ordering in order of like reliability
+- uhhh ok so it looks like instaloader went back to working for me lol
+  - I think it definitely does seem like that graphql /query endpoint is meant to serve these logged-out external requests
+  - I think the problem will just be dealing with rate limits if we have to
+  - maybe even the Philz was banned lmao?
+  - but yeah have some ideas for getting the rate limiting if we have to, namely maybe adding some more fields to the query request
+    using the curls that I grabbed.
+  - and seeing if we can reverse engineer anything out of the API calls that are done to show the public posts
+
+Done:
+- support instagram embed links:
+
+
+
+8/8/2024:
+In progress:
+- support instagram embed links:
+  - using separate backend service
+  - still haven't found the cheapest hosting option, but render should be an ok free system for testing
+  - yeahhh so running into more issues with each of these options we're testing:
+    - render blocks outbound requests to instagram.com LOL
+    - ploomber is just broken
+  - I think honestly the best bet is to just host the whole frickin app on the raspberry pi
+  - then we can even just use the API route. big
+  - uhhhh we might have a problem getting it to serve from a static IP though?
+    - hmm can look into using duckdns for free dynamic dns
+    - I think we just set up a cron job to register the current IP daily to our chosen hostname?
+    - or some other free dns service
+    - poggg
+  - nahh so basically just tunneling this via cloudflare
+
+
+
+8/5/2024:
+In progress:
+- support instagram embed links:
+  - trying to add pyodide to run the script in a web worker
+  - unfortunately, it seems actually like it doesn't let us send the XML requests to the instagram API?
+  - due to cors errors
+  - and I don't think there's any way to disable this from the app?
+    - since it's a browser protection
+  - ok new solution:
+    - create full-fledged new API flask service to serve the post loader endpoint
+    - could maybe even convert this to an actual app haha
+
+
+
+7/30/2024:
+In progress:
+- support instagram embed links
+  - create API route to call instaloader python library and return video source URL
+  - then use this video source URL as the source inside the video element
+  - so yeah tested out py2wasm compiler, didn't really work great (unless I used wasmer runtime)
+    - and even then it like couldn't take the argument that I wanted lol
+  - so thinking about just doing the API route version and using node child_process?
+    - will need to do sanitization on the video URL input.
+    - I think on client will just strip the query params, and on server will make sure it's only:
+      - [a-zA-Z:/\-] characters, shouldn't need query params for the actual post URLs
+  - err ok so we don't have python in the netlify function X fucking D
+  - fucking aws lambda wrapper companies, so shit
+  - like literally why tf do you exist
+  - also tried compiling my python to JS but no tools that can automatically do the library I think
+  - plan B is embedding pyodide on browser and just straight executing script on the client
+  - guess we go for this
+  - so, run pyodide in a web worker on page load, and also install instaloader
+  - then we execute the script that we want (very simple) via the web worker as well
+- test on ipad
+
 
 
 7/27/2024:
 In progress:
 - support instagram embed links
+  - create API route to call instaloader python library and return video source URL
+  - then use this video source URL as the source inside the video element
 - test on ipad
+
+notes:
+- learned about some GCC linker flags I guess?
+- also learned about python to wasm compilation
+  - lowkey basically hard/impossible to *translate* python (dynamically typed language) to C?
+  - interpreting it is easy I guess? cuz you can simulate its runtime model easily with a language like C?
+  - so the best ideas for porting python to other languages is to port the entire CPython library itself lmao
+  - or at least specifically like for the web (WASM, JS), you just transpile CPython to wasm since C is easier to convert to wasm which is basically a kind of assembly lanuage
+  - and so py2wasm is python -> C (nuitka) -> wasm (emscripten)?
+  - and I guess python -> C is the harder part
+  - but also it was trying to get me to link the generated C program somehow that was breaking
+- wasm-ld is a wasm-specific linker
+- getting exposed to some wasm ideas? but definitely a lot more to learn
+  - also it's not the same as asm.js
+- gcc linker args are comma separated after -Wl
+- rpath is like the path you look for library files (I guess like stdlib and other stuff) to link w your C program
+- $ORIGIN is like linux specific and points to the origin of your compilation or something?
+- tried out claude, the responses seem slightly better than chatgpt, but lowkey UI is worse?
+  - I might be a gemini glazer
+  - use LLMs more for questions actually!
+- --disable-new-dtags: something about dynamic tags in ELF binaries?
+  - I remember seeing something about ELF binaries in tsoding video, just like a common binary format for linux platforms?
 
 Done:
 - uh fuck and also debugging the first frame drawing on the normal canvas??

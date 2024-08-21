@@ -5,8 +5,11 @@
 
   export let nextStep;
   export let videoSrc: string;
+  // Exported corners, relative to video bounding box
   export let corners: Coordinate[] = [];
 
+  // Local coordinates for where to draw dots on the canvas
+  let canvasDots: Coordinate[] = [];
   let videoRef: HTMLVideoElement;
   let videoDuration: number;
   let canvasRef: HTMLCanvasElement;
@@ -19,7 +22,7 @@
     }
   }
 
-  const drawCorners = () => {
+  const drawDots = () => {
     canvasRef.width = canvasRef.offsetWidth;
     canvasRef.height = canvasRef.offsetHeight;
     const videoWidth = videoRef.offsetWidth;
@@ -27,9 +30,9 @@
     const context = canvasRef.getContext('2d');
     if (!context) return;
     context.clearRect(0, 0, videoWidth, videoHeight);
-    corners.forEach((corner, index) => {
+    canvasDots.forEach((dot, index) => {
       context.beginPath();
-      context.arc(corner[0] * videoWidth, corner[1] * videoHeight, 5, 0, 2 * Math.PI);
+      context.arc(dot[0], dot[1], 5, 0, 2 * Math.PI);
       context.fillStyle = index === currentCorner ? 'red' : 'green';
       context.fill();
     });
@@ -38,11 +41,15 @@
   const onCanvasClick = (e: MouseEvent) => {
     const videoWidth = videoRef.offsetWidth;
     const videoHeight = videoRef.offsetHeight;
-    const rect = canvasRef.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / videoWidth;
-    const y = (e.clientY - rect.top) / videoHeight;
+    const videoRect = videoRef.getBoundingClientRect();
+    const x = (e.clientX - videoRect.left) / videoWidth;
+    const y = (e.clientY - videoRect.top) / videoHeight;
     corners[currentCorner] = [x, y];
-    drawCorners();
+
+    const canvasRect = canvasRef.getBoundingClientRect();
+    canvasDots[currentCorner] = [e.clientX - canvasRect.left, e.clientY - canvasRect.top];
+
+    drawDots();
   };
 
   const onInput = () => {
@@ -52,12 +59,13 @@
   const onBack = () => {
     currentCorner--;
     corners.pop();
-    drawCorners();
+    canvasDots.pop();
+    drawDots();
   };
 
   const onNext = () => {
     currentCorner++;
-    drawCorners();
+    drawDots();
   };
 
   const onDone = () => {
@@ -100,13 +108,17 @@
 
   .video-container {
     position: relative;
-    justify-self: center;
+    justify-self: stretch;
     align-self: stretch;
     min-width: 0;
     min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .user-video {
+    display: block;
     max-width: 100%;
     max-height: 100%;
   }
