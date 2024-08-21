@@ -19,6 +19,7 @@
       videoSrc = await res.text();
       nextStep();
     } catch (err) {
+      // TODO: handle error
       console.error(err);
     }
   };
