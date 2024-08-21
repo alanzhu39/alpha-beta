@@ -28,6 +28,14 @@ TODO:
 
 8/20/2024:
 In progress:
+- raspberry pi deployment
+- update designs
+- update boundary selection UI
+- allow going back to video upload state
+- ipad testing
+- allow local storage state persistence
+
+Done:
 - fix bugs for continuing playback while one video has ended
 
 
