@@ -59,6 +59,7 @@
   const onBack = () => {
     currentCorner--;
     corners.pop();
+    canvasDots.pop();
     drawDots();
   };
 
@@ -120,7 +121,6 @@
     display: block;
     max-width: 100%;
     max-height: 100%;
-    z-index: 0;
   }
 
   .video-canvas {
