@@ -26,6 +26,12 @@ TODO:
     - PR: https://github.com/alanzhu39/alpha-beta/pull/1
 
 
+8/20/2024:
+In progress:
+- fix bugs for continuing playback while one video has ended
+
+
+
 8/18/2024
 In progress:
 - test, finalize, and merge in instagram embedding changes

@@ -267,6 +267,10 @@
     videoRef.currentTime = parseFloat(rangeRef.value);
   };
 
+  const onEnded = () => {
+    isPlaying = false;
+  };
+
   const onSeeked = () => {
     const context = displayCanvasRef.getContext('2d');
     if (!context) return;
@@ -316,6 +320,7 @@
       on:play={onPlay}
       on:seeked={onSeeked}
       on:timeupdate={onTimeUpdate}
+      on:ended={onEnded}
     >
       <source src={videoSrc} type="video/mp4" />
     </video>
