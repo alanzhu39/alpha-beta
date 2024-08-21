@@ -12,6 +12,7 @@
     referencePerspective,
     referencePose,
     referencePoseColor,
+    userCanvasDimensions,
     userPerspective,
     userPose,
     userPoseColor
@@ -56,21 +57,26 @@
       runningMode: 'VIDEO'
     });
 
+    let canvasWidth = videoRef.offsetWidth;
+    let canvasHeight = videoRef.offsetHeight;
+
     if (isReference) {
       // Create glfx canvas for drawing perspective shift in reference video
       glfxCanvas = fx.canvas();
       glfxCanvas.className = frameCanvasRef.className;
       frameCanvasRef.replaceWith(glfxCanvas);
       frameCanvasRef = glfxCanvas;
+
+      if ($userCanvasDimensions) {
+        [canvasWidth, canvasHeight] = $userCanvasDimensions;
+      }
+    } else {
+      // If drawing the user video, then set the canvas dimensions store
+      $userCanvasDimensions = [videoRef.offsetWidth, videoRef.offsetHeight];
     }
 
-    // Set canvas and video dimensions
-    const canvasWidth = displayCanvasRef.offsetWidth;
-    const canvasHeight = displayCanvasRef.offsetHeight;
-    displayCanvasRef.width = canvasWidth;
-    displayCanvasRef.height = canvasHeight;
-    frameCanvasRef.width = canvasWidth;
-    frameCanvasRef.height = canvasHeight;
+    // Set canvas dimensions
+    setCanvasDimensions(canvasWidth, canvasHeight);
 
     // Draw the first frame of the video
     videoRef.currentTime = 0;
@@ -94,6 +100,26 @@
       redrawLandmarks();
     }
   }
+
+  // Reactive statement for setting the canvas dimensions
+  $: {
+    if ($userCanvasDimensions && displayCanvasRef && frameCanvasRef) {
+      setCanvasDimensions(...$userCanvasDimensions);
+      videoRef.currentTime = 0;
+    }
+  }
+
+  const setCanvasDimensions = (canvasWidth: number, canvasHeight: number) => {
+    displayCanvasRef.width = canvasWidth;
+    displayCanvasRef.height = canvasHeight;
+    displayCanvasRef.style.width = `${canvasWidth}px`;
+    displayCanvasRef.style.height = `${canvasHeight}px`;
+
+    frameCanvasRef.width = canvasWidth;
+    frameCanvasRef.height = canvasHeight;
+    frameCanvasRef.style.width = `${canvasWidth}px`;
+    frameCanvasRef.style.height = `${canvasHeight}px`;
+  };
 
   const onPlayClick = () => {
     isPlaying = true;
@@ -230,9 +256,7 @@
     const context = displayCanvasRef.getContext('2d');
     if (!context) return;
 
-    const frameWidth = videoRef.offsetWidth;
-    const frameHeight = videoRef.offsetHeight;
-    context.clearRect(0, 0, frameWidth, frameHeight);
+    context.clearRect(0, 0, displayCanvasRef.width, displayCanvasRef.height);
 
     const drawingUtils = new DrawingUtils(context);
     drawLandmark(drawingUtils, $userPose, $userPoseColor);
@@ -309,7 +333,7 @@
   </div>
 </div>
 
-<style>
+<style lang="scss">
   .container {
     display: grid;
     grid-template-rows: minmax(0, 1fr) auto;
@@ -319,6 +343,8 @@
 
   .back-button {
     position: absolute;
+    z-index: 10;
+    cursor: pointer;
   }
 
   .video-container {
@@ -332,37 +358,36 @@
   .user-video {
     max-width: 100%;
     max-height: 100%;
+    visibility: hidden;
+  }
+
+  %canvas {
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
   }
 
   .detection-canvas {
-    position: absolute;
+    @extend %canvas;
+
     z-index: -1;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    height: 100%;
   }
 
   .frame-canvas {
-    position: absolute;
+    @extend %canvas;
+
     z-index: 1;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    height: 100%;
     background-color: black;
   }
 
   .display-canvas {
-    position: absolute;
+    @extend %canvas;
+
     z-index: 2;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    height: 100%;
   }
 
   .controls-container {

@@ -38,6 +38,14 @@ In progress:
     because we're just using the canvas for the display
   - uhh ok also yeah, just realized <video> element is default display inline, which is why it wasn't obeying all my block sizing
     - lmfao. with display block it becomes ez
+  - uhh ok, so for boundary selection we want to allow the canvas to stretch into the whole video-container div
+  - but, for video scrubbing, we actually want the canvas to just be the same size as the video?
+  - uhhh ok so canvas has its own coordinates, and that's what we're setting with the width and height attributes on the canvas element
+    - glfx canvas is not letting me set the coordinates on that element actually, so we might have to work around that?
+  - buuut, we actually can set the css styling sizes, via canvasRef.style.width/height. so that's what we want to use for sizing,
+    and lining things up
+  - set canvas style/offset width/height to video offset width/height
+  - set canvas width and height to video size?
 - raspberry pi deployment
   - rebased off of instagram changes
 - make designs prettier

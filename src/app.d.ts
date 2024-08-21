@@ -24,6 +24,7 @@ declare module 'glfx-es6' {
     draw(texture: GlfxTexture, width?: number, height?: number): GlfxCanvas;
     perspective(before: GlfxCoordinates, after: GlfxCoordinates): GlfxCanvas;
     update(): void;
+    replace(node: HTMLElement): GlfxCanvas;
   }
 
   function canvas(): GlfxCanvas;
