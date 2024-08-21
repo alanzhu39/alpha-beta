@@ -45,6 +45,7 @@ node --env-file=.env build
 Using deployment scripts.
 
 ```bash
+# You may have to remove `package-lock.json` when installing dependencies on certain deployment platforms
 scripts/setup.sh
 
 scripts/run.sh

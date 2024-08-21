@@ -36,6 +36,11 @@ In progress:
 - ipad testing
 - allow local storage state persistence
 
+cloudflare notes:
+- we should have only one tunnel per device/network!
+- so like the raspberry pi is one network, so should just have one tunnel to it
+- and works when we just add another public hostname to it for alphabeta
+
 Done:
 - fix bugs for continuing playback while one video has ended
 
