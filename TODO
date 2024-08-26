@@ -26,6 +26,35 @@ TODO:
     - PR: https://github.com/alanzhu39/alpha-beta/pull/1
 
 
+8/25/2024:
+TODO:
+- raspberry pi deployment: finish this
+  - update run script with systemd setup
+  - also figure out how to cancel or restart the systemd'd process
+  - also figure out how to tail the logs/stdout from the systemd'd process
+- fix video display on iOS
+  - on ipad, only played one video when I used two instagram sources
+  - is this ipad bug? or is it bug with two instagram videos
+    - need test
+    - hmm seems like an ios thing, where you can't have two streams of audio?
+    - but maybe we can just disable the audio on our videos
+  - on iphone, uploaded video opens native player...
+  - can we overall just improve the experience on ios?
+- design updates
+  - overall design
+  - improve boundary selection with rectangle dragging
+    - again, want to check ios performance on this
+  - improve video slider behavior
+- overall improvement of ipad workflow
+  - so like, looking up, can we make scrubbing better
+  - and video playing easier
+- extensions
+  - can we improve perspective transformations even more w homographies
+    - or this is probably already being done under the hood in glfx
+  - can we use z-axis in pose landmarks to make our visualizations even cooler?
+
+
+
 8/20/2024:
 In progress:
 - raspberry pi deployment
