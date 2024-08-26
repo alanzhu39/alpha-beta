@@ -51,7 +51,7 @@ To use the AlphaBeta `systemd` service:
 Setup:
 
 ```bash
-# These commands should be run after running `setup.sh` script
+# These commands should be run after running the `setup.sh` script
 sudo cp scripts/alphabeta.service /etc/systemd/system/
 ```
 
@@ -61,6 +61,9 @@ Start:
 sudo systemctl daemon-reload
 sudo systemctl enable alphabeta.service
 sudo systemctl start alphabeta.service
+
+# Restart
+sudo systemctl restart alphabeta.service
 ```
 
 Stop:

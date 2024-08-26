@@ -64,6 +64,9 @@ Done:
     - so added the BASH_ENV variable that runs the asdf setup script before the non-interactive run shell so it all works
       - using `systemctl edit` to add specific env variable overrides without editing the service definition itself
     - and keeps the repo still *somewhat* generic lol
+  - also added optional rollup-linux-arm64-gnu dep to satisfy the raspberry pi architecture
+    - also updated setup script to use `npm ci` which is perfectly suited for these deployment-time clean installations
+    - https://docs.npmjs.com/cli/v10/commands/npm-ci
 
 
 
