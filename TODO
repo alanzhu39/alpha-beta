@@ -11,6 +11,7 @@ TODO:
   - synchronize the pose displays better
   - improve boundary selection process
     - maybe can play around with overlays?
+  - add staging deployment setup
   - improve state persistence/management?
     - so like figuring out going back and forwards and stuff
     - and also going back to video upload screen
