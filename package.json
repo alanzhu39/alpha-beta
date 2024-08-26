@@ -37,5 +37,8 @@
     "@mediapipe/tasks-vision": "^0.10.14",
     "glfx-es6": "^0.0.3",
     "patch-package": "^8.0.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-arm64-gnu": "^4.21.0"
   }
 }
