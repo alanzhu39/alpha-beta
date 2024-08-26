@@ -27,11 +27,7 @@ TODO:
 
 
 8/25/2024:
-TODO:
-- raspberry pi deployment: finish this
-  - update run script with systemd setup
-  - also figure out how to cancel or restart the systemd'd process
-  - also figure out how to tail the logs/stdout from the systemd'd process
+In progress:
 - fix video display on iOS
   - on ipad, only played one video when I used two instagram sources
   - is this ipad bug? or is it bug with two instagram videos
@@ -52,6 +48,22 @@ TODO:
   - can we improve perspective transformations even more w homographies
     - or this is probably already being done under the hood in glfx
   - can we use z-axis in pose landmarks to make our visualizations even cooler?
+
+Done:
+- raspberry pi deployment: finish this
+  - update run script with systemd setup
+    - Done, see alphabeta.service
+  - also figure out how to cancel or restart the systemd'd process
+    - systemctl stop/disable
+  - also figure out how to tail the logs/stdout from the systemd'd process
+    - journalctl -u alphabeta.service
+  - also doing deployment-specific setup, setting BASH_ENV in the env variables to enable asdf so that node is there
+    - was having issues with node in the non-interactive bash script where asdf and its shims weren't available when running the run script in systemd
+    - with the setup script it's no problem because we're running it within the interactive bash shell
+    - but systemd doesn't have the asdf env around it
+    - so added the BASH_ENV variable that runs the asdf setup script before the non-interactive run shell so it all works
+      - using `systemctl edit` to add specific env variable overrides without editing the service definition itself
+    - and keeps the repo still *somewhat* generic lol
 
 
 
