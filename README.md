@@ -46,6 +46,7 @@ Using deployment scripts.
 
 ```bash
 # You may have to remove `package-lock.json` when installing dependencies on certain deployment platforms
+# You may also need to run this with `sudo` to complete the systemd service setup
 scripts/setup.sh
 
 scripts/run.sh

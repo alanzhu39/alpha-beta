@@ -15,3 +15,6 @@ npm install
 
 # Build svelte project
 npm run build
+
+# Set up systemd service
+cp scripts/alphabeta.service /etc/systemd/system/
