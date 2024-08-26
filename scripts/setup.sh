@@ -11,7 +11,7 @@ pip3 install -r requirements.txt
 deactivate
 
 # Install node dependencies
-npm install
+npm ci
 
 # Build svelte project
 npm run build
