@@ -48,10 +48,9 @@ The `setup` script installs Python dependencies, builds the application, and set
 The `run` script activates the Python virtual environment and starts the standalone Node service.
 
 ```bash
-# You may have to remove `package-lock.json` when installing dependencies on certain deployment platforms
-# You may also need to run this with `sudo` to complete the systemd service setup
 scripts/setup.sh
 
+# Start the Node server
 scripts/run.sh
 ```
 
@@ -62,10 +61,16 @@ The service will restart on failures, and also is configured to run on startup
 (via `multi-user.target` which specifies a step in the boot process that the service will start at).
 To use the AlphaBeta `systemd` service:
 
+Setup:
+
+```bash
+# These commands should be run after running `setup.sh` script
+sudo cp scripts/alphabeta.service /etc/systemd/system/
+```
+
 Start:
 
 ```bash
-# These commands should be run after running setup script
 sudo systemctl daemon-reload
 sudo systemctl enable alphabeta.service
 sudo systemctl start alphabeta.service
