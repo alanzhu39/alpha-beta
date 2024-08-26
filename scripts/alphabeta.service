@@ -1,0 +1,12 @@
+[Unit]
+Description=AlphaBeta Service
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/alpha-beta
+ExecStart=/home/pi/alpha-beta/scripts/run.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

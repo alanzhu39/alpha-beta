@@ -10,5 +10,8 @@ pip3 install -r requirements.txt
 # Deactivate venv
 deactivate
 
+# Install node dependencies
+npm ci
+
 # Build svelte project
 npm run build
