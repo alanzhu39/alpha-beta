@@ -38,7 +38,7 @@
     <SelectBoundary {videoSrc} bind:corners nextStep={onSelectedBoundary} />
   {/if}
   {#if currentStep === STEPS.DISPLAY}
-    <VideoScrubber {videoSrc} backStep={onScrubberBack} isReference={true} />
+    <VideoScrubber {videoSrc} backStep={onScrubberBack} />
   {/if}
 </div>
 

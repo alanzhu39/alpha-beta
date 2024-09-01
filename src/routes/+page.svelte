@@ -18,8 +18,8 @@
   }
 
   .layout {
-    width: 100vw;
-    height: 100vh;
+    width: 100dvw;
+    height: 100dvh;
     display: grid;
     grid-template:
       'header header' auto
