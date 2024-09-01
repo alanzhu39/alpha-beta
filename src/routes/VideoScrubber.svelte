@@ -62,7 +62,11 @@
 
     if (isReference) {
       // Create glfx canvas for drawing perspective shift in reference video
-      glfxCanvas = fx.canvas();
+      try {
+        glfxCanvas = fx.canvas();
+      } catch (err) {
+        alert(err);
+      }
       glfxCanvas.className = frameCanvasRef.className;
       frameCanvasRef.replaceWith(glfxCanvas);
       frameCanvasRef = glfxCanvas;
@@ -372,7 +376,6 @@
 
   %canvas {
     position: absolute;
-    z-index: -1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -397,6 +400,7 @@
     @extend %canvas;
 
     z-index: 2;
+    background-color: transparent;
   }
 
   .controls-container {
