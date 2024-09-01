@@ -78,6 +78,9 @@
     // Set canvas dimensions
     setCanvasDimensions(canvasWidth, canvasHeight);
 
+    // Mute video
+    videoRef.muted = true;
+
     // Draw the first frame of the video
     videoRef.currentTime = 0;
   });
@@ -314,6 +317,7 @@
     <video
       class="user-video"
       muted
+      playsinline
       crossorigin="anonymous"
       bind:this={videoRef}
       bind:duration={videoDuration}
