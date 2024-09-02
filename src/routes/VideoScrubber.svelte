@@ -26,6 +26,7 @@
   let videoDuration: number;
   let rangeRef: HTMLInputElement;
   let isPlaying = false;
+  let fps: number = 0;
 
   // Canvas with the WebGL context used by mediapipe for
   // doing pose detection in GPU mode
@@ -41,6 +42,7 @@
   let poseLandmarker: PoseLandmarker;
   let referenceTransform: boolean = false;
   let glfxCanvas: GlfxCanvas;
+  let glfxTexture: GlfxTexture;
 
   onMount(async () => {
     // Create pose landmarker
@@ -48,11 +50,14 @@
     poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
       baseOptions: {
         // modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task'
+        // modelAssetPath:
+        //   'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task'
         modelAssetPath:
-          'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task',
-        delegate: 'GPU'
+          'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task'
+        /* Disabling GPU pose detection for now since it's exploding the WebGL context on iPad */
+        // delegate: 'GPU'
       },
-      canvas: detectionCanvasRef,
+      // canvas: detectionCanvasRef,
       numPoses: 1,
       runningMode: 'VIDEO'
     });
@@ -62,14 +67,16 @@
 
     if (isReference) {
       // Create glfx canvas for drawing perspective shift in reference video
-      try {
-        glfxCanvas = fx.canvas();
-      } catch (err) {
-        alert(err);
-      }
+      glfxCanvas = fx.canvas();
       glfxCanvas.className = frameCanvasRef.className;
       frameCanvasRef.replaceWith(glfxCanvas);
       frameCanvasRef = glfxCanvas;
+
+      glfxTexture = glfxCanvas.texture(videoRef);
+
+      glfxCanvas.addEventListener('webglcontextlost', () => {
+        alert('WebGL context lost');
+      });
 
       if ($userCanvasDimensions) {
         [canvasWidth, canvasHeight] = $userCanvasDimensions;
@@ -194,8 +201,8 @@
     frameHeight: number,
     detectPose: boolean
   ) => {
-    const texture: GlfxTexture = glfxCanvas.texture(videoRef);
-    const frameContext: GlfxCanvas = glfxCanvas.draw(texture);
+    glfxTexture.loadContentsOf(videoRef);
+    const frameContext: GlfxCanvas = glfxCanvas.draw(glfxTexture);
 
     if (referenceTransform) {
       // Draw frame with perspective shift
@@ -227,7 +234,6 @@
     // Detect pose
     if (detectPose) {
       poseLandmarker.detectForVideo(frameCanvasRef, performance.now(), (result) => {
-        poseContext.save();
         for (const landmark of result.landmarks) {
           // Draw reference pose
           drawLandmark(drawingUtils, landmark, $referencePoseColor);
@@ -235,7 +241,6 @@
           // update poseStore
           $referencePose = landmark;
         }
-        poseContext.restore();
       });
     } else {
       // Just draw reference pose
@@ -285,7 +290,7 @@
     drawFrame(context, displayCanvasRef.offsetWidth, displayCanvasRef.offsetHeight);
   };
 
-  const onPlay = () => {
+  const onPlaying = () => {
     const context = displayCanvasRef.getContext('2d');
     if (!context) return;
 
@@ -298,7 +303,8 @@
       if (!isPlaying || videoRef.ended || !context) {
         console.log(`frames: ${count}`);
         console.log(`time: ${performance.now() - start}ms`);
-        console.log(`fps: ${count / ((performance.now() - start) / 1000)}`);
+        fps = count / ((performance.now() - start) / 1000);
+        console.log(`fps: ${fps}`);
         return;
       }
 
@@ -325,7 +331,7 @@
       crossorigin="anonymous"
       bind:this={videoRef}
       bind:duration={videoDuration}
-      on:play={onPlay}
+      on:playing={onPlaying}
       on:seeked={onSeeked}
       on:timeupdate={onTimeUpdate}
       on:ended={onEnded}
@@ -343,6 +349,7 @@
       <button on:click={onPlayClick}>Play</button>
     {/if}
     <input type="range" step="0.03" value="0" bind:this={rangeRef} on:input={onInput} />
+    {fps}
   </div>
 </div>
 
