@@ -50,7 +50,7 @@
     const vision = await FilesetResolver.forVisionTasks('@mediapipe/tasks-vision/wasm');
     poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
       baseOptions: {
-        /* Disabling GPU pose detection for now since it's exploding the WebGL context on iPad */
+        /* Disabling GPU pose detection for now on iPad since it's exploding the WebGL context */
         delegate: useGpu ? 'GPU' : 'CPU',
         modelAssetPath:
           // 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task'
@@ -370,6 +370,7 @@
       <button on:click={onPlayClick}>Play</button>
     {/if}
     <input type="range" step="0.03" value="0" bind:this={rangeRef} on:input={onInput} />
+    <!-- TODO: remove this in design updates -->
     {fps}
   </div>
 </div>
