@@ -17,6 +17,7 @@ declare module 'glfx-es6' {
     constructor();
     width: number;
     height: number;
+    loadContentsOf(element: HTMLVideoElement): void;
   }
 
   interface GlfxCanvas extends HTMLCanvasElement {

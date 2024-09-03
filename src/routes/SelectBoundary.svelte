@@ -76,7 +76,14 @@
 <div class="container">
   <!-- TODO: back button -->
   <div class="video-container">
-    <video class="user-video" muted bind:this={videoRef} bind:duration={videoDuration}>
+    <video
+      class="user-video"
+      muted
+      playsinline
+      crossOrigin="anonymous"
+      bind:this={videoRef}
+      bind:duration={videoDuration}
+    >
       <source src={videoSrc} type="video/mp4" />
     </video>
     <canvas class="video-canvas" id="video-canvas" bind:this={canvasRef} on:click={onCanvasClick} />

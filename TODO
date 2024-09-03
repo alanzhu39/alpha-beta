@@ -27,6 +27,78 @@ TODO:
     - PR: https://github.com/alanzhu39/alpha-beta/pull/1
 
 
+9/3/2024:
+In progress:
+- ios bugfixes
+  - fix video stuttering on ios (this happens on my phone too)
+
+
+
+9/1/2024:
+In progress:
+- ios bugfixes
+- design updates
+  - move menu into hamburger in right corner
+    - could also have settings here
+    - or popup modal instead of hamburger
+  - orr, move alphabeta title into the footer?
+  - add padding at bottom of the page, so that the video sliders are not overlapping the ipad gesture controls
+  - add prettier backgrounds (maybe dark mode?)
+  - update slider appearances (and behavior?)
+    - how do we make sliding behavior in webapps smoother on ipad?
+  - update boundary selection
+
+Done:
+- ios bugfixes
+  - add video playsinline so that videos don't full screen by default
+
+ios debug notes:
+- ok some bug causes notes:
+- occurs when we try to draw onplay with glfx
+- works when we draw a single frame...
+- single frame works with both perspective and no perspective
+- so it's an issue only when playing the video
+- it seems like the video kinda disappears?
+- or like, when it's playing, it can't pull frames from the video
+- but it works without glfx, so just drawing to the canvas straight from the video as normal
+  - eg. when we do the user frame drawing
+- ok so I did some testing, it seems that we are indeed losing the glfx webgl rendering context when playing the video!
+  - figured this out by adding an event listener for the webglcontext lost event, and it got fired on video play
+  - not sure why this happens, there are a variety of reasons
+  - I'm wondering if maybe it's like too much load on the gpu so safari booms it
+  - and same issue of context loss on chrome
+- oooook so I think it's something with like the system just having a ton of memory leaks and pooping out because of that?
+- so like when I don't constantly refresh the texture, it works fine.
+- is there a way to make the video texture binding much more efficient?
+- hmm ok, so, I've changed the glfx rendering to update the texture, instead of re-creating it each time
+- I think that's helped resolve much of the memory leak, where we were re-creating the texture each time and not deleting it
+  which was hella slow
+  - also maybe wanna test out deleting as well?
+  - mm nah but it seems like current way is (probably) for sure the best
+- buuut, I've been running into issues where we still lose the webgl context because I think the pose compute,
+  which we had running on the GPU, was also eating up a lot of bandwidth
+- so I think we have to just run the pose detection on CPU for now?
+- should probably expose these in some settings menu:
+  - pose detection: CPU or GPU (maybe auto-detect depending on your machine?)
+  - pose model selection: heavy, full, lite
+  - maybe even want to add fallback for the perspective transform? so using the perspective.ts version
+    if GPU is not supported
+- new problem: for some reason, something new broke.
+  - so basically, when we draw the reference pose (with webgl initialized),
+    even if we're fricking not even doing any drawing with glfx, the underlying video is stuttering
+  - could this be because of like CPU/GPU load which causes decoding to be slower?
+  - cuz like, the JS that's running actually seems to be going at like 30 fps,
+    it just reads the frames from the stuttered video, which then causes the canvas display to stall as well
+  - yeahhh, like you can see the pose itself actually shifting around a tiny bit on each frame even when it's frozen,
+    which is more evidence for the video itself being laggy, since it's detecting the pose still on the fly on each frame,
+    just the actual underlying frame is frozen because the *video* itelf is actually frozen
+  - how to fix???
+
+notes:
+- javascripts has special `arguments` object that basically holds the arguments coming into the function call
+
+
+
 8/25/2024:
 In progress:
 - fix video display on iOS

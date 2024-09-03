@@ -9,6 +9,7 @@
     type NormalizedLandmark
   } from '@mediapipe/tasks-vision';
   import {
+    isMobile,
     referencePerspective,
     referencePose,
     referencePoseColor,
@@ -26,6 +27,7 @@
   let videoDuration: number;
   let rangeRef: HTMLInputElement;
   let isPlaying = false;
+  let fps: number = 0;
 
   // Canvas with the WebGL context used by mediapipe for
   // doing pose detection in GPU mode
@@ -41,31 +43,56 @@
   let poseLandmarker: PoseLandmarker;
   let referenceTransform: boolean = false;
   let glfxCanvas: GlfxCanvas;
+  let glfxTexture: GlfxTexture;
 
-  onMount(async () => {
+  const setupPoseLandmarker = async (useGpu: boolean = false) => {
     // Create pose landmarker
     const vision = await FilesetResolver.forVisionTasks('@mediapipe/tasks-vision/wasm');
     poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
       baseOptions: {
-        // modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task'
+        /* Disabling GPU pose detection for now on iPad since it's exploding the WebGL context */
+        delegate: useGpu ? 'GPU' : 'CPU',
         modelAssetPath:
-          'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task',
-        delegate: 'GPU'
+          // 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task'
+          'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task'
+        // 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task'
       },
-      canvas: detectionCanvasRef,
+      canvas: useGpu ? detectionCanvasRef : undefined,
       numPoses: 1,
       runningMode: 'VIDEO'
     });
+
+    if (useGpu) {
+      detectionCanvasRef.addEventListener('webglcontextlost', () => {
+        alert('Detection canvas WebGL context lost');
+        setupPoseLandmarker(false);
+      });
+    }
+  };
+
+  const setupGlfx = () => {
+    // Create glfx canvas for drawing perspective shift in reference video
+    glfxCanvas = fx.canvas();
+    glfxCanvas.className = frameCanvasRef.className;
+    frameCanvasRef.replaceWith(glfxCanvas);
+    frameCanvasRef = glfxCanvas;
+
+    glfxTexture = glfxCanvas.texture(videoRef);
+
+    glfxCanvas.addEventListener('webglcontextlost', () => {
+      alert('Glfx canvas WebGL context lost');
+      setupGlfx();
+    });
+  };
+
+  onMount(async () => {
+    await setupPoseLandmarker(true);
 
     let canvasWidth = videoRef.offsetWidth;
     let canvasHeight = videoRef.offsetHeight;
 
     if (isReference) {
-      // Create glfx canvas for drawing perspective shift in reference video
-      glfxCanvas = fx.canvas();
-      glfxCanvas.className = frameCanvasRef.className;
-      frameCanvasRef.replaceWith(glfxCanvas);
-      frameCanvasRef = glfxCanvas;
+      setupGlfx();
 
       if ($userCanvasDimensions) {
         [canvasWidth, canvasHeight] = $userCanvasDimensions;
@@ -77,6 +104,9 @@
 
     // Set canvas dimensions
     setCanvasDimensions(canvasWidth, canvasHeight);
+
+    // Mute video
+    videoRef.muted = true;
 
     // Draw the first frame of the video
     videoRef.currentTime = 0;
@@ -187,8 +217,8 @@
     frameHeight: number,
     detectPose: boolean
   ) => {
-    const texture: GlfxTexture = glfxCanvas.texture(videoRef);
-    const frameContext: GlfxCanvas = glfxCanvas.draw(texture);
+    glfxTexture.loadContentsOf(videoRef);
+    const frameContext: GlfxCanvas = glfxCanvas.draw(glfxTexture);
 
     if (referenceTransform) {
       // Draw frame with perspective shift
@@ -220,7 +250,6 @@
     // Detect pose
     if (detectPose) {
       poseLandmarker.detectForVideo(frameCanvasRef, performance.now(), (result) => {
-        poseContext.save();
         for (const landmark of result.landmarks) {
           // Draw reference pose
           drawLandmark(drawingUtils, landmark, $referencePoseColor);
@@ -228,7 +257,6 @@
           // update poseStore
           $referencePose = landmark;
         }
-        poseContext.restore();
       });
     } else {
       // Just draw reference pose
@@ -278,7 +306,7 @@
     drawFrame(context, displayCanvasRef.offsetWidth, displayCanvasRef.offsetHeight);
   };
 
-  const onPlay = () => {
+  const onPlaying = () => {
     const context = displayCanvasRef.getContext('2d');
     if (!context) return;
 
@@ -291,13 +319,19 @@
       if (!isPlaying || videoRef.ended || !context) {
         console.log(`frames: ${count}`);
         console.log(`time: ${performance.now() - start}ms`);
-        console.log(`fps: ${count / ((performance.now() - start) / 1000)}`);
+        fps = count / ((performance.now() - start) / 1000);
+        console.log(`fps: ${fps}`);
         return;
       }
 
       drawFrame(context, canvasWidth, canvasHeight);
 
-      requestAnimationFrame(() => step(count + 1));
+      if ($isMobile) {
+        // Throttling here seems to help out with video stuttering on mobile devices
+        setTimeout(() => requestAnimationFrame(() => step(count + 1)), 1000 / 60);
+      } else {
+        requestAnimationFrame(() => step(count + 1));
+      }
     }
 
     requestAnimationFrame(() => step(0));
@@ -314,10 +348,11 @@
     <video
       class="user-video"
       muted
+      playsinline
       crossorigin="anonymous"
       bind:this={videoRef}
       bind:duration={videoDuration}
-      on:play={onPlay}
+      on:playing={onPlaying}
       on:seeked={onSeeked}
       on:timeupdate={onTimeUpdate}
       on:ended={onEnded}
@@ -335,6 +370,8 @@
       <button on:click={onPlayClick}>Play</button>
     {/if}
     <input type="range" step="0.03" value="0" bind:this={rangeRef} on:input={onInput} />
+    <!-- TODO: remove this in design updates -->
+    {fps}
   </div>
 </div>
 
@@ -368,7 +405,6 @@
 
   %canvas {
     position: absolute;
-    z-index: -1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -393,6 +429,7 @@
     @extend %canvas;
 
     z-index: 2;
+    background-color: transparent;
   }
 
   .controls-container {
