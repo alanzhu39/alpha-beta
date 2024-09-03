@@ -73,10 +73,7 @@ sudo systemctl restart alphabeta.service
 Continuous deployment:
 
 ```bash
-scripts/setup.sh
-
-# Restart
-sudo systemctl restart alphabeta.service
+scripts/cd.sh
 ```
 
 Stop:
