@@ -20,7 +20,7 @@ npm run dev
 # or start the server and open the app in a new browser tab
 npm run dev -- --open
 
-# use the host flag to allow other devices on your local network to connect to the dev server
+# use the `host` flag to allow other devices on your local network to connect to the dev server
 # useful for testing on mobile devices
 npm run dev:host
 ```
