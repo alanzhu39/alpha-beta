@@ -1,6 +1,13 @@
 <script>
+  import { onMount } from 'svelte';
   import ReferenceBetaFlow from './ReferenceBetaFlow.svelte';
   import UserBetaFlow from './UserBetaFlow.svelte';
+  import { isMobile } from './stores';
+  import { mobileCheck } from '../lib/utils';
+
+  onMount(() => {
+    $isMobile = mobileCheck();
+  });
 </script>
 
 <div class="layout">

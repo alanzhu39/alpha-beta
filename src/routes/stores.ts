@@ -12,3 +12,5 @@ export const userCanvasDimensions = writable<[number, number]>();
 export const referencePerspective = writable<Perspective>();
 export const referencePose = writable<NormalizedLandmark[]>();
 export const referencePoseColor = writable<string>('blue');
+
+export const isMobile = writable(false);

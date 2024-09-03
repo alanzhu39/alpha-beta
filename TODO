@@ -27,10 +27,16 @@ TODO:
     - PR: https://github.com/alanzhu39/alpha-beta/pull/1
 
 
+9/3/2024:
+In progress:
+- ios bugfixes
+  - fix video stuttering on ios (this happens on my phone too)
+
+
+
 9/1/2024:
 In progress:
 - ios bugfixes
-  - add video playsinline so that videos don't full screen by default
 - design updates
   - move menu into hamburger in right corner
     - could also have settings here
@@ -41,6 +47,10 @@ In progress:
   - update slider appearances (and behavior?)
     - how do we make sliding behavior in webapps smoother on ipad?
   - update boundary selection
+
+Done:
+- ios bugfixes
+  - add video playsinline so that videos don't full screen by default
 
 ios debug notes:
 - ok some bug causes notes:

@@ -9,6 +9,7 @@
     type NormalizedLandmark
   } from '@mediapipe/tasks-vision';
   import {
+    isMobile,
     referencePerspective,
     referencePose,
     referencePoseColor,
@@ -44,39 +45,54 @@
   let glfxCanvas: GlfxCanvas;
   let glfxTexture: GlfxTexture;
 
-  onMount(async () => {
+  const setupPoseLandmarker = async (useGpu: boolean = false) => {
     // Create pose landmarker
     const vision = await FilesetResolver.forVisionTasks('@mediapipe/tasks-vision/wasm');
     poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
       baseOptions: {
-        // modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task'
-        // modelAssetPath:
-        //   'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task'
-        modelAssetPath:
-          'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task'
         /* Disabling GPU pose detection for now since it's exploding the WebGL context on iPad */
-        // delegate: 'GPU'
+        delegate: useGpu ? 'GPU' : 'CPU',
+        modelAssetPath:
+          // 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task'
+          'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task'
+        // 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task'
       },
-      // canvas: detectionCanvasRef,
+      canvas: useGpu ? detectionCanvasRef : undefined,
       numPoses: 1,
       runningMode: 'VIDEO'
     });
+
+    if (useGpu) {
+      detectionCanvasRef.addEventListener('webglcontextlost', () => {
+        alert('Detection canvas WebGL context lost');
+        setupPoseLandmarker(false);
+      });
+    }
+  };
+
+  const setupGlfx = () => {
+    // Create glfx canvas for drawing perspective shift in reference video
+    glfxCanvas = fx.canvas();
+    glfxCanvas.className = frameCanvasRef.className;
+    frameCanvasRef.replaceWith(glfxCanvas);
+    frameCanvasRef = glfxCanvas;
+
+    glfxTexture = glfxCanvas.texture(videoRef);
+
+    glfxCanvas.addEventListener('webglcontextlost', () => {
+      alert('Glfx canvas WebGL context lost');
+      setupGlfx();
+    });
+  };
+
+  onMount(async () => {
+    await setupPoseLandmarker(true);
 
     let canvasWidth = videoRef.offsetWidth;
     let canvasHeight = videoRef.offsetHeight;
 
     if (isReference) {
-      // Create glfx canvas for drawing perspective shift in reference video
-      glfxCanvas = fx.canvas();
-      glfxCanvas.className = frameCanvasRef.className;
-      frameCanvasRef.replaceWith(glfxCanvas);
-      frameCanvasRef = glfxCanvas;
-
-      glfxTexture = glfxCanvas.texture(videoRef);
-
-      glfxCanvas.addEventListener('webglcontextlost', () => {
-        alert('WebGL context lost');
-      });
+      setupGlfx();
 
       if ($userCanvasDimensions) {
         [canvasWidth, canvasHeight] = $userCanvasDimensions;
@@ -310,7 +326,12 @@
 
       drawFrame(context, canvasWidth, canvasHeight);
 
-      requestAnimationFrame(() => step(count + 1));
+      if ($isMobile) {
+        // Throttling here seems to help out with video stuttering on mobile devices
+        setTimeout(() => requestAnimationFrame(() => step(count + 1)), 1000 / 60);
+      } else {
+        requestAnimationFrame(() => step(count + 1));
+      }
     }
 
     requestAnimationFrame(() => step(0));
