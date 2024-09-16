@@ -44,6 +44,6 @@
 
 <style>
   .container {
-    background-color: blue;
+    border-left: 2px solid var(--background-color-gray);
   }
 </style>

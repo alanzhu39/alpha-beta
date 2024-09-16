@@ -27,17 +27,20 @@
 
 <div class="container">
   <label class="video-label">
-    Upload
+    Upload a video
     <input type="file" class="video-input" on:change={onUpload} />
   </label>
   or
-  <div>
-    <input placeholder="Instagram post URL" bind:value={postUrlInput} />
-    <button on:click={onSubmitUrl}>Submit</button>
+  <div class="url">
+    <label class="url-label">
+      Enter an Instagram post URL
+      <input class="url-input" placeholder="Instagram post URL" bind:value={postUrlInput} />
+    </label>
+    <button class="submit-button" on:click={onSubmitUrl}>Submit</button>
   </div>
 </div>
 
-<style>
+<style lang="scss">
   .container {
     display: flex;
     flex-direction: column;
@@ -48,16 +51,46 @@
     height: 100%;
   }
 
-  .video-label {
-    cursor: pointer;
-    background-color: var(--green);
+  %button {
+    background-color: var(--background-color-yellow);
+    color: var(--text-color-black);
     padding: 15px;
     border-radius: 100px;
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    cursor: pointer;
+  }
+
+  .video-label {
+    @extend %button;
   }
 
   .video-input {
-    width: 0;
-    height: 0;
+    display: none;
+  }
+
+  .url {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+
+    .url-label {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+
+      .url-input {
+        font-size: 13px;
+        padding: 5px;
+        border-radius: 5px;
+      }
+    }
+
+    .submit-button {
+      @extend %button;
+
+      border: none;
+      font-size: 16px;
+      background-color: #8db38b;
+      color: var(--text-color-white);
+    }
   }
 </style>

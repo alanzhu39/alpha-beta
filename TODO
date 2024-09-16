@@ -32,6 +32,13 @@ TODO:
 9/15/2024:
 In progress:
 - design improvements
+  - boundary box selection
+    - actually draw the box
+    - how is the touch-hold-drag performance on ipad?
+  - customizing upload buttons on mobile so they don't show the default buttons and stuff
+  - make font cooler
+  - add space at bottom of screen for the ipad gesture bar (in safari)
+  - put in actual designs (default dark mode?)
 
 
 
