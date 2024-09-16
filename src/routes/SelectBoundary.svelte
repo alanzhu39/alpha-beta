@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { Coordinate } from './stores';
+  import VideoScrubber from './VideoScrubber.svelte';
 
   export let nextStep;
   export let videoSrc: string;
@@ -11,7 +12,6 @@
   let videoRef: HTMLVideoElement;
   let videoDuration: number;
   let canvasRef: HTMLCanvasElement;
-  let rangeRef: HTMLInputElement;
   let canvasCorners: Coordinate[] = [];
   let currentCorner: number = 0;
   let isDrawing: boolean = false;
@@ -30,12 +30,6 @@
       drawBoundary();
     }
   });
-
-  $: {
-    if (rangeRef && videoDuration) {
-      rangeRef.max = videoDuration.toString();
-    }
-  }
 
   const closestCorner = (canvasX: number, canvasY: number) => {
     let closest = 0;
@@ -130,8 +124,8 @@
     drawBoundary();
   };
 
-  const onInput = () => {
-    videoRef.currentTime = parseFloat(rangeRef.value);
+  const onScrub = (e: CustomEvent<number>) => {
+    videoRef.currentTime = e.detail * videoDuration;
   };
 
   const onDone = () => {
@@ -164,7 +158,7 @@
       on:touchend={onDrawingEnd}
     />
   </div>
-  <input type="range" step="0.03" value="0" bind:this={rangeRef} on:input={onInput} />
+  <VideoScrubber on:scrub={onScrub} {videoDuration} />
   <!-- Instructions -->
   <div class="instructions-container">
     <span>Select each corner hold of the MoonBoard.</span>
