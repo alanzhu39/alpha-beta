@@ -90,8 +90,8 @@
 
       border: none;
       font-size: 16px;
-      background-color: #8db38b;
-      color: var(--text-color-white);
+      background-color: var(--background-color-pink);
+      color: var(--text-color-black);
     }
   }
 </style>

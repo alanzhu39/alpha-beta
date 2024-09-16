@@ -26,6 +26,7 @@
     --background-color-dark-gray: #1f1f20;
     --background-color-gray: #343434;
     --background-color-yellow: #fdb91f;
+    --background-color-pink: #e5a4cb;
 
     --text-color-white: #e6e6e6;
     --text-color-black: #000;
@@ -54,7 +55,7 @@
     grid-area: header;
     /* Adding a little space at the bottom for iPad gesture controls */
     margin: 0;
-    padding: 13px 0;
+    padding: 13px 10px;
     background-color: var(--background-color-gray);
   }
 </style>

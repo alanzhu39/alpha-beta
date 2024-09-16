@@ -158,11 +158,13 @@
       on:touchend={onDrawingEnd}
     />
   </div>
-  <VideoScrubber on:scrub={onScrub} {videoDuration} />
-  <!-- Instructions -->
-  <div class="instructions-container">
-    <span>Select each corner hold of the MoonBoard.</span>
-    <button on:click={onDone}>Done</button>
+  <div class="controls">
+    <VideoScrubber on:scrub={onScrub} {videoDuration} />
+    <!-- Instructions -->
+    <div class="instructions-container">
+      <span>Select the boundary of the MoonBoard in the video.</span>
+      <button class="done-button" on:click={onDone}>Done</button>
+    </div>
   </div>
 </div>
 
@@ -200,12 +202,29 @@
     height: 100%;
   }
 
-  .instructions-container {
+  .controls {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
     padding: 10px;
-    display: grid;
-    grid-template-columns: auto 2fr 1fr 1fr;
+  }
+
+  .instructions-container {
+    display: flex;
     gap: 10px;
     text-align: center;
     align-items: center;
+    justify-content: center;
+  }
+
+  .done-button {
+    border: none;
+    font-size: 15px;
+    background-color: var(--background-color-pink);
+    color: var(--text-color-black);
+    padding: 7px 11px;
+    border-radius: 50px;
+    cursor: pointer;
   }
 </style>

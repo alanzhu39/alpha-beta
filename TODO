@@ -32,15 +32,41 @@ TODO:
 9/15/2024:
 In progress:
 - design improvements
+  - update video viewer page with new scrubber component, and make things align with color palette
+  - back buttons, todos
+  - add in instructions modal that's active when a user first enters the page
+    - working on this
+  - add in settings modal
+    - think we will have info icon and settings icon at the bottom right
+
+Modal instructions:
+- Welcome to AlphaBeta! A platform to help you compare your Moonboard beta with others'.
+  - AlphaBeta aligns two Moonboard beta videos and aligns body positioning data over them to help you compare
+    your beta against others' down to the inch.
+- How it works:
+  1. First, upload a video of your beta and a video of the beta you want to compare against.
+    You can also use beta videos from Instagram using the post URL.
+  2. Next, select the boundaries of the Moonboards in both videos.
+    This is used to align the two videos so that the Moonboards in both videos overlap exactly.
+  3. Finally, the videos will pop up side-by-side, with pose detection overlaid on top of them.
+    Scrub within the two videos to compare your beta on different parts of the climb!
+- Happy sending!
+- disclaimer: not affiliated with moonboard in any way
+- link to my github
+
+Done:
+- design improvements
   - boundary box selection
     - actually draw the box
     - how is the touch-hold-drag performance on ipad?
+      - it's good!, if we do `e.preventDefault` on some of the touch events
   - customizing upload buttons on mobile so they don't show the default buttons and stuff
   - make font cooler
+    - using inter/sans-serif for now, looks p clean imo
   - add space at bottom of screen for the ipad gesture bar (in safari)
+    - done
   - put in actual designs (default dark mode?)
-  - add in instructions modal that's active when a user first enters the page
-  - add in settings modal
+    - added color palette, based on moonboard app, and working on making things prettier like the scrubber
 
 
 

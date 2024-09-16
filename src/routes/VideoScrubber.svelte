@@ -119,7 +119,6 @@
   .wrapper {
     display: flex;
     align-items: center;
-    padding: 5px 10px;
     gap: 10px;
   }
 
