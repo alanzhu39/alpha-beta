@@ -5,10 +5,7 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 - prioritization:
-  - allow instagram embed links
-  - ipad testing
   - make designs prettier
-  - synchronize the pose displays better
   - improve boundary selection process
     - maybe can play around with overlays?
   - add staging deployment setup
@@ -22,15 +19,34 @@ TODO:
   - improve code quality
 
 - done:
+  - allow instagram embed links
+  - ipad testing
+    - also fixed some mobile bugs (eg. stuttering, performance issues)
+    - these are working ok for now, but could probably try to make it even smoother in the future
+  - synchronize the pose displays better
   - improve perspective transform display performance:
     - switched to glfx implementation
     - PR: https://github.com/alanzhu39/alpha-beta/pull/1
 
 
+9/15/2024:
+In progress:
+- design improvements
+
+
+
 9/3/2024:
 In progress:
+
+Done:
 - ios bugfixes
   - fix video stuttering on ios (this happens on my phone too)
+    - from overloading the video rendering or something
+    - so like playing from the video itself was even lagging
+    - throttling `requestAnimationFrame` on mobile solved this
+  - fixed videos not playing (from webgl context getting lost)
+    - also added some fallback logic to retry/recreate webgl contexts on failure
+  - some qol changes for mobile dev, also setting screen width dynamically to respond to changing viewport sizes on mobile
 
 
 
