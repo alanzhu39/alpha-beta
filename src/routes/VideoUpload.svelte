@@ -26,6 +26,7 @@
 </script>
 
 <div class="container">
+  <!-- TODO: button loading and error states -->
   <label class="video-label">
     Upload a video
     <input type="file" class="video-input" on:change={onUpload} />

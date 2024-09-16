@@ -15,7 +15,8 @@
   <ReferenceBetaFlow />
   <!-- TODO: some kind of cool logo -->
   <h1 class="header">AlphaBeta</h1>
-  <!-- TODO: settings -->
+  <!-- TODO: info icon -->
+  <!-- TODO: settings icon -->
   <!-- TODO: modal with instructions when you first enter the app -->
 </div>
 

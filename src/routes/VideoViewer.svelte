@@ -328,7 +328,7 @@
 
       if ($isMobile) {
         // Throttling here seems to help out with video stuttering on mobile devices
-        setTimeout(() => requestAnimationFrame(() => step(count + 1)), 1000 / 60);
+        setTimeout(() => requestAnimationFrame(() => step(count + 1)), 1000 / 60); // max 60 frames per second
       } else {
         requestAnimationFrame(() => step(count + 1));
       }
@@ -372,6 +372,7 @@
     <input type="range" step="0.03" value="0" bind:this={rangeRef} on:input={onInput} />
     <!-- TODO: remove this in design updates -->
     {fps}
+    {$isMobile}
   </div>
 </div>
 
