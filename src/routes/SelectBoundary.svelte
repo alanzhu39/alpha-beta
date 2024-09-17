@@ -2,7 +2,9 @@
   import { onMount } from 'svelte';
   import type { Coordinate } from './stores';
   import VideoScrubber from './VideoScrubber.svelte';
+  import BackIcon from '$lib/icons/BackIcon.svelte';
 
+  export let backStep;
   export let nextStep;
   export let videoSrc: string;
   // Exported corners, relative to video bounding box
@@ -143,7 +145,7 @@
 </script>
 
 <div class="container">
-  <!-- TODO: back button -->
+  <button class="back-button" on:click={backStep}><BackIcon width="30px" /></button>
   <div class="video-container">
     <video
       class="user-video"
@@ -180,9 +182,27 @@
 
 <style>
   .container {
+    position: relative;
     display: grid;
     grid-template-rows: minmax(0, 1fr) auto;
     height: 100%;
+  }
+
+  .back-button {
+    background: none;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color-white);
+    display: flex;
+    align-items: center;
+
+    position: absolute;
+    z-index: 10;
+    top: 10px;
+    left: 10px;
+    stroke: var(--background-color-dark-gray);
+    stroke-width: 9;
   }
 
   .video-container {

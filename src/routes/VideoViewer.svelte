@@ -21,6 +21,7 @@
   import VideoScrubber from './VideoScrubber.svelte';
   import PlayIcon from '$lib/icons/PlayIcon.svelte';
   import PauseIcon from '$lib/icons/PauseIcon.svelte';
+  import BackIcon from '$lib/icons/BackIcon.svelte';
 
   export let backStep;
   export let videoSrc: string;
@@ -340,7 +341,7 @@
 </script>
 
 <div class="container">
-  <button class="back-button" on:click={backStep}>Back</button>
+  <button class="back-button" on:click={backStep}><BackIcon width="30px" /></button>
   <div class="video-container">
     <video
       class="user-video"
@@ -381,12 +382,6 @@
     grid-template-rows: minmax(0, 1fr) auto;
     height: 100%;
     position: relative;
-  }
-
-  .back-button {
-    position: absolute;
-    z-index: 10;
-    cursor: pointer;
   }
 
   .video-container {
@@ -449,6 +444,17 @@
     color: var(--text-color-white);
     display: flex;
     align-items: center;
+  }
+
+  .back-button {
+    @extend %control-button;
+
+    position: absolute;
+    z-index: 10;
+    top: 10px;
+    left: 10px;
+    stroke: var(--background-color-dark-gray);
+    stroke-width: 9;
   }
 
   .pause-button {

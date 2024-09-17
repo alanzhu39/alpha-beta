@@ -4,6 +4,8 @@
   import UserBetaFlow from './UserBetaFlow.svelte';
   import { isMobile } from './stores';
   import { mobileCheck } from '../lib/utils';
+  import SettingsIcon from '$lib/icons/SettingsIcon.svelte';
+  import InfoIcon from '$lib/icons/InfoIcon.svelte';
 
   onMount(() => {
     $isMobile = mobileCheck();
@@ -14,9 +16,19 @@
   <UserBetaFlow />
   <ReferenceBetaFlow />
   <!-- TODO: some kind of cool logo -->
-  <h1 class="header">AlphaBeta</h1>
-  <!-- TODO: info icon -->
-  <!-- TODO: settings icon -->
+  <h1 class="header">
+    <span>AlphaBeta</span>
+    <div class="buttons-container">
+      <!-- TODO: info click -->
+      <button class="icon-button">
+        <InfoIcon height="25px" />
+      </button>
+      <!-- TODO: settings click -->
+      <button class="icon-button">
+        <SettingsIcon height="30px" />
+      </button>
+    </div>
+  </h1>
   <!-- TODO: modal with instructions when you first enter the app -->
 </div>
 
@@ -57,5 +69,25 @@
     margin: 0;
     padding: 13px 10px;
     background-color: var(--background-color-gray);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .buttons-container {
+    display: flex;
+    padding: 0 10px;
+    gap: 20px;
+  }
+
+  .icon-button {
+    margin: 0;
+    background: none;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color-white);
+    display: flex;
+    align-items: center;
+    width: 30px;
   }
 </style>

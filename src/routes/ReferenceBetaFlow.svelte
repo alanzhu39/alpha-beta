@@ -24,6 +24,10 @@
     $referencePerspective = [corners[0], corners[1], corners[2], corners[3]];
   };
 
+  const onBoundaryBack = () => {
+    currentStep = STEPS.VIDEO_UPLOAD;
+  };
+
   const onViewerBack = () => {
     currentStep = STEPS.SELECT_BOUNDARY;
     corners = [];
@@ -35,7 +39,12 @@
     <VideoUpload bind:videoSrc nextStep={onVideoUpload} />
   {/if}
   {#if currentStep === STEPS.SELECT_BOUNDARY}
-    <SelectBoundary {videoSrc} bind:corners nextStep={onSelectedBoundary} />
+    <SelectBoundary
+      {videoSrc}
+      bind:corners
+      backStep={onBoundaryBack}
+      nextStep={onSelectedBoundary}
+    />
   {/if}
   {#if currentStep === STEPS.DISPLAY}
     <VideoViewer {videoSrc} backStep={onViewerBack} isReference={true} />
