@@ -2,6 +2,7 @@
   import { clamp, timestampFromSeconds } from '$lib/math';
   import { createEventDispatcher, onMount } from 'svelte';
 
+  export let scrubberPosition: number = 0;
   export let videoDuration: number = 0;
 
   let canvasRef: HTMLCanvasElement;
@@ -11,6 +12,11 @@
   const scrubberBarWidth = 5;
   const inlinePadding = 10;
   let scrubberWidth: number;
+
+  $: {
+    currPosition = scrubberPosition;
+    if (canvasRef) drawScrubber();
+  }
 
   const dispatch = createEventDispatcher<{ scrub: number }>();
 

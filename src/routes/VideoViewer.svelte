@@ -18,6 +18,9 @@
     userPose,
     userPoseColor
   } from './stores';
+  import VideoScrubber from './VideoScrubber.svelte';
+  import PlayIcon from '$lib/icons/PlayIcon.svelte';
+  import PauseIcon from '$lib/icons/PauseIcon.svelte';
 
   export let backStep;
   export let videoSrc: string;
@@ -25,9 +28,9 @@
 
   let videoRef: HTMLVideoElement;
   let videoDuration: number;
-  let rangeRef: HTMLInputElement;
   let isPlaying = false;
   let fps: number = 0;
+  let scrubberPosition: number = 0;
 
   // Canvas with the WebGL context used by mediapipe for
   // doing pose detection in GPU mode
@@ -111,12 +114,6 @@
     // Draw the first frame of the video
     videoRef.currentTime = 0;
   });
-
-  $: {
-    if (rangeRef && videoDuration) {
-      rangeRef.max = videoDuration.toString();
-    }
-  }
 
   $: referenceTransform = !!$referencePerspective && !!$userPerspective;
 
@@ -291,10 +288,6 @@
     drawLandmark(drawingUtils, $userPose, $userPoseColor);
   };
 
-  const onInput = () => {
-    videoRef.currentTime = parseFloat(rangeRef.value);
-  };
-
   const onEnded = () => {
     isPlaying = false;
   };
@@ -338,7 +331,11 @@
   };
 
   const onTimeUpdate = () => {
-    rangeRef.value = videoRef.currentTime.toString();
+    scrubberPosition = videoRef.currentTime / videoDuration;
+  };
+
+  const onScrub = (e: CustomEvent<number>) => {
+    videoRef.currentTime = e.detail * videoDuration;
   };
 </script>
 
@@ -364,15 +361,17 @@
     <canvas class="display-canvas" bind:this={displayCanvasRef} />
   </div>
   <div class="controls-container">
+    <!-- TODO: use play/pause icons -->
     {#if isPlaying}
-      <button on:click={onPauseClick}>Pause</button>
+      <button class="pause-button" on:click={onPauseClick}>
+        <PauseIcon width="20px" />
+      </button>
     {:else}
-      <button on:click={onPlayClick}>Play</button>
+      <button class="play-button" on:click={onPlayClick}>
+        <PlayIcon width="20px" />
+      </button>
     {/if}
-    <input type="range" step="0.03" value="0" bind:this={rangeRef} on:input={onInput} />
-    <!-- TODO: remove this in design updates -->
-    {fps}
-    {$isMobile}
+    <VideoScrubber on:scrub={onScrub} {scrubberPosition} {videoDuration} />
   </div>
 </div>
 
@@ -440,5 +439,23 @@
     gap: 10px;
     text-align: center;
     align-items: center;
+  }
+
+  %control-button {
+    background: none;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color-white);
+    display: flex;
+    align-items: center;
+  }
+
+  .pause-button {
+    @extend %control-button;
+  }
+
+  .play-button {
+    @extend %control-button;
   }
 </style>
