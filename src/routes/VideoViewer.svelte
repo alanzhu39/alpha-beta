@@ -287,8 +287,8 @@
     context.clearRect(0, 0, displayCanvasRef.width, displayCanvasRef.height);
 
     const drawingUtils = new DrawingUtils(context);
-    drawLandmark(drawingUtils, $userPose, $userPoseColor);
     drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
+    drawLandmark(drawingUtils, $userPose, $userPoseColor);
   };
 
   const onInput = () => {

@@ -96,6 +96,15 @@
     return coord;
   };
 
+  const onCanPlay = () => {
+    const videoRect = videoRef.getBoundingClientRect();
+    const canvasRect = canvasRef.getBoundingClientRect();
+    corners = canvasCorners.map(([canvasX, canvasY]) => [
+      (canvasX + canvasRect.left - videoRect.left) / videoRef.offsetWidth,
+      (canvasY + canvasRect.top - videoRect.top) / videoRef.offsetHeight
+    ]);
+  };
+
   const onDrawingStart = (e: MouseEvent | TouchEvent) => {
     isDrawing = true;
 
@@ -143,6 +152,7 @@
       crossOrigin="anonymous"
       bind:this={videoRef}
       bind:duration={videoDuration}
+      on:canplay={onCanPlay}
     >
       <source src={videoSrc} type="video/mp4" />
     </video>

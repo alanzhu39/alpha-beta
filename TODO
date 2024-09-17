@@ -29,6 +29,19 @@ TODO:
     - PR: https://github.com/alanzhu39/alpha-beta/pull/1
 
 
+9/16/2024:
+In progress:
+- design improvements
+  - update video viewer page with new scrubber component, and make things align with color palette
+    - using new colors for poses
+  - back buttons, todos
+  - add in instructions modal that's active when a user first enters the page
+    - working on this
+  - add in settings modal
+    - think we will have info icon and settings icon at the bottom right
+
+
+
 9/15/2024:
 In progress:
 - design improvements
