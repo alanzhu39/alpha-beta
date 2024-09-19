@@ -36,7 +36,7 @@
 
 <div class="container">
   {#if currentStep === STEPS.VIDEO_UPLOAD}
-    <VideoUpload bind:videoSrc nextStep={onVideoUpload} />
+    <VideoUpload bind:videoSrc nextStep={onVideoUpload} uploadButtonText="Upload your video" />
   {/if}
   {#if currentStep === STEPS.SELECT_BOUNDARY}
     <SelectBoundary

@@ -6,10 +6,23 @@
   import { mobileCheck } from '../lib/utils';
   import SettingsIcon from '$lib/icons/SettingsIcon.svelte';
   import InfoIcon from '$lib/icons/InfoIcon.svelte';
+  import InstructionsModal from './InstructionsModal.svelte';
+
+  let isModalOpen =
+    typeof localStorage === 'undefined' ? false : localStorage.getItem('didCloseModal') !== 'true';
 
   onMount(() => {
     $isMobile = mobileCheck();
   });
+
+  const onInfoClick = () => {
+    isModalOpen = true;
+  };
+
+  const onModalClose = () => {
+    localStorage.setItem('didCloseModal', 'true');
+    isModalOpen = false;
+  };
 </script>
 
 <div class="layout">
@@ -19,8 +32,7 @@
   <h1 class="header">
     <span>AlphaBeta</span>
     <div class="buttons-container">
-      <!-- TODO: info click -->
-      <button class="icon-button">
+      <button class="icon-button" on:click={onInfoClick}>
         <InfoIcon height="25px" />
       </button>
       <!-- TODO: settings click -->
@@ -30,6 +42,9 @@
     </div>
   </h1>
   <!-- TODO: modal with instructions when you first enter the app -->
+  {#if isModalOpen}
+    <InstructionsModal onClose={onModalClose} />
+  {/if}
 </div>
 
 <style>

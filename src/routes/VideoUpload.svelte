@@ -1,6 +1,7 @@
 <script lang="ts">
   export let nextStep;
   export let videoSrc: string;
+  export let uploadButtonText: string = 'Upload a video';
   let postUrlInput = '';
 
   const onUpload = (e: Event) => {
@@ -28,7 +29,7 @@
 <div class="container">
   <!-- TODO: button loading and error states -->
   <label class="video-label">
-    Upload a video
+    {uploadButtonText}
     <input type="file" class="video-input" on:change={onUpload} />
   </label>
   or

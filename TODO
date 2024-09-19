@@ -29,13 +29,16 @@ TODO:
     - PR: https://github.com/alanzhu39/alpha-beta/pull/1
 
 
-TODO:
+9/19/2024
+In progress:
 - design improvements
-  - add in instructions modal that's active when a user first enters the page
-    - working on this
+  - upload/submit url button loading states
   - add in settings modal
     - think we will have info icon and settings icon at the bottom right
-  - upload/submit url button loading states
+
+Done:
+- design improvements
+  - add in instructions modal that's active when a user first enters the page
 
 
 
