@@ -41,7 +41,6 @@
       </button>
     </div>
   </h1>
-  <!-- TODO: modal with instructions when you first enter the app -->
   {#if isModalOpen}
     <InstructionsModal onClose={onModalClose} />
   {/if}

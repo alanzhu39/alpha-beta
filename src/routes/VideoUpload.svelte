@@ -2,6 +2,8 @@
   export let nextStep;
   export let videoSrc: string;
   export let uploadButtonText: string = 'Upload a video';
+
+  let isLoading = false;
   let postUrlInput = '';
 
   const onUpload = (e: Event) => {
@@ -16,7 +18,9 @@
     const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
     const shortcode = pathnameSegments[pathnameSegments.length - 1];
     try {
+      isLoading = true;
       const res = await fetch(`/api/instagram?shortcode=${shortcode}`);
+      isLoading = false;
       videoSrc = await res.text();
       nextStep();
     } catch (err) {

@@ -362,7 +362,6 @@
     <canvas class="display-canvas" bind:this={displayCanvasRef} />
   </div>
   <div class="controls-container">
-    <!-- TODO: use play/pause icons -->
     {#if isPlaying}
       <button class="pause-button" on:click={onPauseClick}>
         <PauseIcon width="20px" />

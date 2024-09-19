@@ -33,6 +33,7 @@ TODO:
 In progress:
 - design improvements
   - upload/submit url button loading states
+    - also error states
   - add in settings modal
     - think we will have info icon and settings icon at the bottom right
 
