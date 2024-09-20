@@ -30,7 +30,7 @@
   <ReferenceBetaFlow />
   <!-- TODO: some kind of cool logo -->
   <h1 class="header">
-    <span>AlphaBeta</span>
+    <span>🧗‍♂️🧗‍♀️AlphaBeta</span>
     <div class="buttons-container">
       <button class="icon-button" on:click={onInfoClick}>
         <InfoIcon height="25px" />
@@ -56,6 +56,7 @@
 
     --text-color-white: #e6e6e6;
     --text-color-black: #000;
+    --text-color-red: #ff5353;
 
     font-family: 'Inter', sans-serif;
 

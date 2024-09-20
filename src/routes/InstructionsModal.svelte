@@ -149,7 +149,7 @@
 
   .close-icon {
     position: absolute;
-    top: 10px;
+    top: 13px;
     right: 20px;
     background: none;
     padding: 0;

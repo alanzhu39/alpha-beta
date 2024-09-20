@@ -9,6 +9,7 @@
   let currPosition: number = 0;
   let isDrawing: boolean = false;
 
+  const keyboardScrubOffset = 0.001;
   const scrubberBarWidth = 5;
   const inlinePadding = 10;
   let scrubberWidth: number;
@@ -63,11 +64,11 @@
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'ArrowLeft') {
-      currPosition = Math.max(0, currPosition - 0.01);
+      currPosition = Math.max(0, currPosition - keyboardScrubOffset);
       drawScrubber();
       dispatch('scrub', currPosition);
     } else if (e.key === 'ArrowRight') {
-      currPosition = Math.min(1, currPosition + 0.01);
+      currPosition = Math.min(1, currPosition + keyboardScrubOffset);
       drawScrubber();
       dispatch('scrub', currPosition);
     }

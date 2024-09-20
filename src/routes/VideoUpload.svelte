@@ -4,6 +4,7 @@
   export let uploadButtonText: string = 'Upload a video';
 
   let isLoading = false;
+  let inputError: string | null = null;
   let postUrlInput = '';
 
   const onUpload = (e: Event) => {
@@ -12,38 +13,54 @@
     nextStep();
   };
 
+  const onInput = () => {
+    inputError = null;
+  };
+
   const onSubmitUrl = async () => {
-    // process postUrlInput to extract post shortcode
-    const { pathname } = new URL(postUrlInput);
-    const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
-    const shortcode = pathnameSegments[pathnameSegments.length - 1];
     try {
+      // process postUrlInput to extract post shortcode
+      const { pathname } = new URL(postUrlInput);
+      const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
+      const shortcode = pathnameSegments[pathnameSegments.length - 1];
+
       isLoading = true;
       const res = await fetch(`/api/instagram?shortcode=${shortcode}`);
       isLoading = false;
       videoSrc = await res.text();
       nextStep();
     } catch (err) {
-      // TODO: handle error
       console.error(err);
+      inputError = 'Failed to fetch video. Please try again!';
     }
   };
 </script>
 
 <div class="container">
-  <!-- TODO: button loading and error states -->
   <label class="video-label">
     {uploadButtonText}
     <input type="file" class="video-input" on:change={onUpload} />
   </label>
   or
-  <div class="url">
-    <label class="url-label">
+  <form class="url">
+    <label class="url-label" on:submit={onSubmitUrl}>
       Enter an Instagram post URL
-      <input class="url-input" placeholder="Instagram post URL" bind:value={postUrlInput} />
+      <input
+        class="url-input"
+        placeholder="Instagram post URL"
+        bind:value={postUrlInput}
+        on:input={onInput}
+      />
+      {#if inputError}<span class="error">{inputError}</span>{/if}
     </label>
-    <button class="submit-button" on:click={onSubmitUrl}>Submit</button>
-  </div>
+    <button
+      class={`submit-button ${isLoading ? 'loading' : ''}`}
+      on:click={onSubmitUrl}
+      disabled={isLoading}
+    >
+      Submit
+    </button>
+  </form>
 </div>
 
 <style lang="scss">
@@ -88,6 +105,11 @@
         padding: 5px;
         border-radius: 5px;
       }
+
+      .error {
+        color: var(--text-color-red);
+        font-size: 12px;
+      }
     }
 
     .submit-button {
@@ -97,6 +119,38 @@
       font-size: 16px;
       background-color: var(--background-color-pink);
       color: var(--text-color-black);
+      position: relative;
+
+      &:disabled {
+        cursor: auto;
+        opacity: 0.6;
+        color: transparent;
+      }
+
+      &.loading::after {
+        // Loading spinner
+        content: '';
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+        border-radius: 50%;
+        border: 4px solid var(--background-color-gray);
+        border-bottom-color: transparent;
+        top: 50%;
+        left: 50%;
+        translate: -50% -50%;
+      }
+    }
+  }
+
+  @keyframes rotation {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
     }
   }
 </style>
