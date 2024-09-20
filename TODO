@@ -33,7 +33,8 @@ TODO:
 In progress:
 - design improvements
   - add in settings modal
-    - think we will have info icon and settings icon at the bottom right
+    - model selection: light, full, heavy
+    - pose colors
 
 Done:
 - design improvements

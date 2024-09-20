@@ -139,8 +139,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 60%;
-    height: 60%;
+    width: 75%;
+    height: 75%;
     background-color: var(--background-color-gray);
     z-index: 101;
     padding: 40px 40px 40px 0;

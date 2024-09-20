@@ -98,6 +98,7 @@
     return coord;
   };
 
+  // Initialize the exported corners as soon as the video is loaded
   const onCanPlay = () => {
     const videoRect = videoRef.getBoundingClientRect();
     const canvasRect = canvasRef.getBoundingClientRect();
