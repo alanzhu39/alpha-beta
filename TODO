@@ -1,0 +1,723 @@
+TODO:
+- pose detection of arbitrary moonboard beta
+- overlay of two moonboard beta and their detected poses (one base video with pose detection, one shadow pose overlaid on top)
+  - this comes with a subgoal of being able to manipulate the videos so that the board positions and thus the holds overlay properly, so that the poses will also match properly
+- selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
+
+- prioritization:
+  - make designs prettier
+  - improve boundary selection process
+    - maybe can play around with overlays?
+  - add staging deployment setup
+  - improve state persistence/management?
+    - so like figuring out going back and forwards and stuff
+    - and also going back to video upload screen
+    - loading and error case handling
+  - store video source URLs, and application state, in local storage, so if you refresh the page,
+    you won't lose your spot
+  - resive observers? for screen sizing which kinda booms the canvases as well
+  - improve code quality
+
+- done:
+  - allow instagram embed links
+  - ipad testing
+    - also fixed some mobile bugs (eg. stuttering, performance issues)
+    - these are working ok for now, but could probably try to make it even smoother in the future
+  - synchronize the pose displays better
+  - improve perspective transform display performance:
+    - switched to glfx implementation
+    - PR: https://github.com/alanzhu39/alpha-beta/pull/1
+
+
+9/19/2024
+In progress:
+- design improvements
+  - add in settings modal
+    - model selection: light, full, heavy
+    - pose colors
+
+Done:
+- design improvements
+  - add in instructions modal that's active when a user first enters the page
+  - upload/submit url button loading states
+    - also error states
+
+
+
+9/16/2024:
+In progress:
+- design improvements
+  - update video viewer page with new scrubber component, and make things align with color palette
+    - for some reason getting some lag when we seek while the video is playing. bookmarking this to solve later
+  - add in instructions modal that's active when a user first enters the page
+    - working on this
+  - add in settings modal
+    - think we will have info icon and settings icon at the bottom right
+
+Done:
+- design improvements
+  - update video viewer page with new scrubber component, and make things align with color palette
+    - using new colors for poses
+    - added play/pause icons
+  - back buttons, todos
+
+
+
+9/15/2024:
+In progress:
+- design improvements
+  - update video viewer page with new scrubber component, and make things align with color palette
+  - back buttons, todos
+  - add in instructions modal that's active when a user first enters the page
+    - working on this
+  - add in settings modal
+    - think we will have info icon and settings icon at the bottom right
+
+Modal instructions:
+- Welcome to AlphaBeta! A platform to help you compare your Moonboard beta with others'.
+  - AlphaBeta aligns two Moonboard beta videos and aligns body positioning data over them to help you compare
+    your beta against others' down to the inch.
+- How it works:
+  1. First, upload a video of your beta and a video of the beta you want to compare against.
+    You can also use beta videos from Instagram using the post URL.
+  2. Next, select the boundaries of the Moonboards in both videos.
+    This is used to align the two videos so that the Moonboards in both videos overlap exactly.
+  3. Finally, the videos will pop up side-by-side, with pose detection overlaid on top of them.
+    Scrub within the two videos to compare your beta on different parts of the climb!
+- Happy sending!
+- disclaimer: not affiliated with moonboard in any way
+- link to my github
+- ooh maybe dropdowns with screenshots? or even just the screenshot there, so they have an idea of what to look for
+
+Done:
+- design improvements
+  - boundary box selection
+    - actually draw the box
+    - how is the touch-hold-drag performance on ipad?
+      - it's good!, if we do `e.preventDefault` on some of the touch events
+  - customizing upload buttons on mobile so they don't show the default buttons and stuff
+  - make font cooler
+    - using inter/sans-serif for now, looks p clean imo
+  - add space at bottom of screen for the ipad gesture bar (in safari)
+    - done
+  - put in actual designs (default dark mode?)
+    - added color palette, based on moonboard app, and working on making things prettier like the scrubber
+
+
+
+9/3/2024:
+In progress:
+
+Done:
+- ios bugfixes
+  - fix video stuttering on ios (this happens on my phone too)
+    - from overloading the video rendering or something
+    - so like playing from the video itself was even lagging
+    - throttling `requestAnimationFrame` on mobile solved this
+  - fixed videos not playing (from webgl context getting lost)
+    - also added some fallback logic to retry/recreate webgl contexts on failure
+  - some qol changes for mobile dev, also setting screen width dynamically to respond to changing viewport sizes on mobile
+
+
+
+9/1/2024:
+In progress:
+- ios bugfixes
+- design updates
+  - move menu into hamburger in right corner
+    - could also have settings here
+    - or popup modal instead of hamburger
+  - orr, move alphabeta title into the footer?
+  - add padding at bottom of the page, so that the video sliders are not overlapping the ipad gesture controls
+  - add prettier backgrounds (maybe dark mode?)
+  - update slider appearances (and behavior?)
+    - how do we make sliding behavior in webapps smoother on ipad?
+  - update boundary selection
+
+Done:
+- ios bugfixes
+  - add video playsinline so that videos don't full screen by default
+
+ios debug notes:
+- ok some bug causes notes:
+- occurs when we try to draw onplay with glfx
+- works when we draw a single frame...
+- single frame works with both perspective and no perspective
+- so it's an issue only when playing the video
+- it seems like the video kinda disappears?
+- or like, when it's playing, it can't pull frames from the video
+- but it works without glfx, so just drawing to the canvas straight from the video as normal
+  - eg. when we do the user frame drawing
+- ok so I did some testing, it seems that we are indeed losing the glfx webgl rendering context when playing the video!
+  - figured this out by adding an event listener for the webglcontext lost event, and it got fired on video play
+  - not sure why this happens, there are a variety of reasons
+  - I'm wondering if maybe it's like too much load on the gpu so safari booms it
+  - and same issue of context loss on chrome
+- oooook so I think it's something with like the system just having a ton of memory leaks and pooping out because of that?
+- so like when I don't constantly refresh the texture, it works fine.
+- is there a way to make the video texture binding much more efficient?
+- hmm ok, so, I've changed the glfx rendering to update the texture, instead of re-creating it each time
+- I think that's helped resolve much of the memory leak, where we were re-creating the texture each time and not deleting it
+  which was hella slow
+  - also maybe wanna test out deleting as well?
+  - mm nah but it seems like current way is (probably) for sure the best
+- buuut, I've been running into issues where we still lose the webgl context because I think the pose compute,
+  which we had running on the GPU, was also eating up a lot of bandwidth
+- so I think we have to just run the pose detection on CPU for now?
+- should probably expose these in some settings menu:
+  - pose detection: CPU or GPU (maybe auto-detect depending on your machine?)
+  - pose model selection: heavy, full, lite
+  - maybe even want to add fallback for the perspective transform? so using the perspective.ts version
+    if GPU is not supported
+- new problem: for some reason, something new broke.
+  - so basically, when we draw the reference pose (with webgl initialized),
+    even if we're fricking not even doing any drawing with glfx, the underlying video is stuttering
+  - could this be because of like CPU/GPU load which causes decoding to be slower?
+  - cuz like, the JS that's running actually seems to be going at like 30 fps,
+    it just reads the frames from the stuttered video, which then causes the canvas display to stall as well
+  - yeahhh, like you can see the pose itself actually shifting around a tiny bit on each frame even when it's frozen,
+    which is more evidence for the video itself being laggy, since it's detecting the pose still on the fly on each frame,
+    just the actual underlying frame is frozen because the *video* itelf is actually frozen
+  - how to fix???
+
+notes:
+- javascripts has special `arguments` object that basically holds the arguments coming into the function call
+
+
+
+8/25/2024:
+In progress:
+- fix video display on iOS
+  - on ipad, only played one video when I used two instagram sources
+  - is this ipad bug? or is it bug with two instagram videos
+    - need test
+    - hmm seems like an ios thing, where you can't have two streams of audio?
+    - but maybe we can just disable the audio on our videos
+  - on iphone, uploaded video opens native player...
+  - can we overall just improve the experience on ios?
+- design updates
+  - overall design
+  - improve boundary selection with rectangle dragging
+    - again, want to check ios performance on this
+  - improve video slider behavior
+- overall improvement of ipad workflow
+  - so like, looking up, can we make scrubbing better
+  - and video playing easier
+- extensions
+  - can we improve perspective transformations even more w homographies
+    - or this is probably already being done under the hood in glfx
+  - can we use z-axis in pose landmarks to make our visualizations even cooler?
+
+Done:
+- raspberry pi deployment: finish this
+  - update run script with systemd setup
+    - Done, see alphabeta.service
+  - also figure out how to cancel or restart the systemd'd process
+    - systemctl stop/disable
+  - also figure out how to tail the logs/stdout from the systemd'd process
+    - journalctl -u alphabeta.service
+  - also doing deployment-specific setup, setting BASH_ENV in the env variables to enable asdf so that node is there
+    - was having issues with node in the non-interactive bash script where asdf and its shims weren't available when running the run script in systemd
+    - with the setup script it's no problem because we're running it within the interactive bash shell
+    - but systemd doesn't have the asdf env around it
+    - so added the BASH_ENV variable that runs the asdf setup script before the non-interactive run shell so it all works
+      - using `systemctl edit` to add specific env variable overrides without editing the service definition itself
+    - and keeps the repo still *somewhat* generic lol
+  - also added optional rollup-linux-arm64-gnu dep to satisfy the raspberry pi architecture
+    - also updated setup script to use `npm ci` which is perfectly suited for these deployment-time clean installations
+    - https://docs.npmjs.com/cli/v10/commands/npm-ci
+
+
+
+8/20/2024:
+In progress:
+- raspberry pi deployment
+  - update scripts with systemd setups
+- update designs
+- update boundary selection UI
+- allow going back to video upload state
+- ipad testing
+- allow local storage state persistence
+
+cloudflare notes:
+- we should have only one tunnel per device/network!
+- so like the raspberry pi is one network, so should just have one tunnel to it
+- and works when we just add another public hostname to it for alphabeta
+
+Done:
+- fix bugs for continuing playback while one video has ended
+- raspberry pi deployment
+  - update readme with build scripts
+
+
+
+8/18/2024
+In progress:
+- test, finalize, and merge in instagram embedding changes
+  - testing some actual beta videos: it works!!!
+  - also adding edge case where the videos are in sidecar format (eg. slideshow videos)
+  - basically just taking the first video_url that exists
+  - also have to sort out a bug with the image aspect ratio being weird (eg. square videos)
+  - uhh ok, so I think we want to have the reference video size match the user video size, if it exists
+  - or more like, the reference canvas size. we don't really care about the video size, actually,
+    because we're just using the canvas for the display
+  - uhh ok also yeah, just realized <video> element is default display inline, which is why it wasn't obeying all my block sizing
+    - lmfao. with display block it becomes ez
+  - uhh ok, so for boundary selection we want to allow the canvas to stretch into the whole video-container div
+  - but, for video scrubbing, we actually want the canvas to just be the same size as the video?
+  - uhhh ok so canvas has its own coordinates, and that's what we're setting with the width and height attributes on the canvas element
+    - glfx canvas is not letting me set the coordinates on that element actually, so we might have to work around that?
+  - buuut, we actually can set the css styling sizes, via canvasRef.style.width/height. so that's what we want to use for sizing,
+    and lining things up
+  - set canvas style/offset width/height to video offset width/height
+  - set canvas width and height to video size?
+- raspberry pi deployment
+  - rebased off of instagram changes
+- make designs prettier
+  - use rectangle drawing for making box instead of doing point-by-point?
+  - makes it easier to line up the edges of the board
+  - also more intuitive on ipad I think?
+    - tapping multiple times is less comfortable than just dragging the points
+- loading, failure, and more state change cases?
+  - like, going between pages in the sequences
+- ipad testing
+
+
+
+8/14/2024:
+In progress:
+- ok so did some investigation yesterday, and like over the weekend
+- I guess instaloader is using the graph endpoint which fetches the video metadata in a specific graphql query
+  - see https://github.com/instaloader/instaloader/blob/e159065799ee4a1813185095bc4b663a1073fe3c/instaloader/structures.py#L320
+  - this is the method that populates the metadata that is then read for the video_url property
+- I was able to find this same video source URL using the search params: /?__a=1&__d=dis
+  - but I heard you'll also get rate limited on this
+  - so I think the idea will just be, create a method for each method, and then wrap each in a try-catch
+    so you can fall back to the next one if the first one is rate limited
+  - ordering in order of like reliability
+- uhhh ok so it looks like instaloader went back to working for me lol
+  - I think it definitely does seem like that graphql /query endpoint is meant to serve these logged-out external requests
+  - I think the problem will just be dealing with rate limits if we have to
+  - maybe even the Philz was banned lmao?
+  - but yeah have some ideas for getting the rate limiting if we have to, namely maybe adding some more fields to the query request
+    using the curls that I grabbed.
+  - and seeing if we can reverse engineer anything out of the API calls that are done to show the public posts
+
+Done:
+- support instagram embed links:
+
+
+
+8/8/2024:
+In progress:
+- support instagram embed links:
+  - using separate backend service
+  - still haven't found the cheapest hosting option, but render should be an ok free system for testing
+  - yeahhh so running into more issues with each of these options we're testing:
+    - render blocks outbound requests to instagram.com LOL
+    - ploomber is just broken
+  - I think honestly the best bet is to just host the whole frickin app on the raspberry pi
+  - then we can even just use the API route. big
+  - uhhhh we might have a problem getting it to serve from a static IP though?
+    - hmm can look into using duckdns for free dynamic dns
+    - I think we just set up a cron job to register the current IP daily to our chosen hostname?
+    - or some other free dns service
+    - poggg
+  - nahh so basically just tunneling this via cloudflare
+
+
+
+8/5/2024:
+In progress:
+- support instagram embed links:
+  - trying to add pyodide to run the script in a web worker
+  - unfortunately, it seems actually like it doesn't let us send the XML requests to the instagram API?
+  - due to cors errors
+  - and I don't think there's any way to disable this from the app?
+    - since it's a browser protection
+  - ok new solution:
+    - create full-fledged new API flask service to serve the post loader endpoint
+    - could maybe even convert this to an actual app haha
+
+
+
+7/30/2024:
+In progress:
+- support instagram embed links
+  - create API route to call instaloader python library and return video source URL
+  - then use this video source URL as the source inside the video element
+  - so yeah tested out py2wasm compiler, didn't really work great (unless I used wasmer runtime)
+    - and even then it like couldn't take the argument that I wanted lol
+  - so thinking about just doing the API route version and using node child_process?
+    - will need to do sanitization on the video URL input.
+    - I think on client will just strip the query params, and on server will make sure it's only:
+      - [a-zA-Z:/\-] characters, shouldn't need query params for the actual post URLs
+  - err ok so we don't have python in the netlify function X fucking D
+  - fucking aws lambda wrapper companies, so shit
+  - like literally why tf do you exist
+  - also tried compiling my python to JS but no tools that can automatically do the library I think
+  - plan B is embedding pyodide on browser and just straight executing script on the client
+  - guess we go for this
+  - so, run pyodide in a web worker on page load, and also install instaloader
+  - then we execute the script that we want (very simple) via the web worker as well
+- test on ipad
+
+
+
+7/27/2024:
+In progress:
+- support instagram embed links
+  - create API route to call instaloader python library and return video source URL
+  - then use this video source URL as the source inside the video element
+- test on ipad
+
+notes:
+- learned about some GCC linker flags I guess?
+- also learned about python to wasm compilation
+  - lowkey basically hard/impossible to *translate* python (dynamically typed language) to C?
+  - interpreting it is easy I guess? cuz you can simulate its runtime model easily with a language like C?
+  - so the best ideas for porting python to other languages is to port the entire CPython library itself lmao
+  - or at least specifically like for the web (WASM, JS), you just transpile CPython to wasm since C is easier to convert to wasm which is basically a kind of assembly lanuage
+  - and so py2wasm is python -> C (nuitka) -> wasm (emscripten)?
+  - and I guess python -> C is the harder part
+  - but also it was trying to get me to link the generated C program somehow that was breaking
+- wasm-ld is a wasm-specific linker
+- getting exposed to some wasm ideas? but definitely a lot more to learn
+  - also it's not the same as asm.js
+- gcc linker args are comma separated after -Wl
+- rpath is like the path you look for library files (I guess like stdlib and other stuff) to link w your C program
+- $ORIGIN is like linux specific and points to the origin of your compilation or something?
+- tried out claude, the responses seem slightly better than chatgpt, but lowkey UI is worse?
+  - I might be a gemini glazer
+  - use LLMs more for questions actually!
+- --disable-new-dtags: something about dynamic tags in ELF binaries?
+  - I remember seeing something about ELF binaries in tsoding video, just like a common binary format for linux platforms?
+
+Done:
+- uh fuck and also debugging the first frame drawing on the normal canvas??
+  - what's working for me is just seeking to currenttime = 0 lmao which triggers the onSeek frame draw. nice!
+  - not working for user pose
+  - uhh so I guess maybe looking at the video ref and why it's not showing up?
+  - uh ok so when stepping, it seems the video is drawn on the frame...
+  - but maybe sometimes the video ref is still null?
+  - yeah idk wtf the actual cause is lol
+    - but seems other people have similar issue
+- fix perspective shift with glfx
+  - yeah so just relying on the perspective transform from glfx instead of doing it ourselves lmao
+  - there's a slight offset on the transformed video?
+  - and also just like figuring out the dimensions of the frame canvas in glfx
+    - mm yeah doing this actually not great, since it actually seems to affect the resolution of the output!
+    - so maybe trying out now just using the user and reference poses directly
+  - and I think maybe can try out just inputting the user and reference pose stores into the perspective directly
+    - poggg this works really well actually
+  - then we wouldn't even have to calculate the transform! yes!
+  - I'm pretty sure the transform itself is right, but maybe retest it
+    - yeah retested and it still looks fine, so probably not problem with that
+- improve perspective transform performance:
+  - smooth out glfx bugs
+  - updated the pose updates logic to be cleaner and just redraw the landmarks themselves (instead of the whole frame)
+  - separating frame and display canvases for user frame as well!
+    - yeah so drawing video frame to frame-canvas in user video
+
+
+
+7/18/2024:
+In progress:
+- improve perspective transform performance
+  - considering using different libraries for this (not perspectivets since it's hella slow)
+  - experimenting with glfx-es6
+  - I guess we have to append the display canvas directly if we're rendering the transformed view
+  - uhhh I guess it's kinda working with glfx? may have to smooth some things out in the rendering pipeline still
+    - like pause/play sometimes doesn't work
+    - and also the perspective shift is like very slightly off for some reason?
+    - oh and also you have to use the video dimensions instead of canvas dimensions because the webgl context has those dimensions
+    - maybe that's screwing with it?
+    - check the canvas dimensions on initialization
+    - or can we set video width and height on initialization?
+    - ohh and also I think sometimes the video ref is not initialized when we try to initialize the canvas?
+      - cuz there's like this texture undefined error thingy sometimes
+- allow instagram embed links
+  - so I think we can use this python library, make an api endpoint to get video URL from post URL, then use that as video source
+- test on ipad
+
+notes:
+- ok so it seems like performance bottleneck is basically drawing all the slices of the original image?
+- so I think just drawing on the display canvas won't really help cuz that's just the last step
+- can we maybe figure out if we can use the actual canvas perspective shift API?
+
+
+
+7/13/2024:
+In progress:
+- improve perspective transform display performance
+- clean up pose synchronization code? could maybe refactor some of the logic
+
+Done:
+- synchronize pose displays better
+  - so like when you play eg. the reference video, the pose should update on the user video
+  - should we just bind the canvases between the components?
+  - but the two flows actually don't share any context either
+  - uh ok so I made it so that like, if you're drawing the user canvas, and you detect a change in the reference pose store, then you also draw that one
+  - seems to make the performance slower though, like 20fps -> 10fps
+  - will do some testing on the cause
+    - ah ok so yeah, it's the same thing of the perspective drawing being the bottleneck I think
+    - like, when we draw the user pose onto the reference canvas, we still have to redraw the underlying image, which is perspective shifted
+    - so that calls the perspective API which is slow
+    - notice that on the other side, adding the drawing on the user canvas from the reference pose updates introduces no significant performance decrease
+    - performance is still around 10 fps which is the same as just drawing the reference canvas itself
+  - so yeah looks like next step would be trying to improve perspective performance
+
+- tidy up designs
+- fix perspective drawing
+  - can we also maybe improve the performance?
+  - right now it like copies stuff to a canvas...
+  - can we tweak the internals to just draw straight to the display canvas?
+- improvements:
+  - make detected poses be drawn on both canvases...
+    - like right now it only draws on the canvas that you're playing on
+  - boundary selection UX, since sometimes holds can still be like slightly misaligned...
+    - how can we let the user adjust this as they're scrubbing?
+    - or maybe we can adjust one screen while the other one is already playing?
+    - also maybe allow scrubbing on the initial frame corner selection page
+      so you can account for slight adjustements during the video and occluded corners
+  - displaying first frame on load of the scrubber screen component
+  - better scrubber UI
+  - better colors and fonts
+  - testing on ipad
+
+
+
+6/30/2024:
+In progress:
+- hmm so actually I feel like we can just have the user copy/paste the embed code?
+- utilize the searching and stuff from the existing moonboard app lol
+- wait lol so the performance doesn't actually change if we detect off of the display canvas vs the video
+  - of course lol
+  - the detection canvas is just there so we have a webgl2 context that we can run GPU stuff in
+  - we're not actually ever drawing anything to the detection canvas
+- so the performance is probably bottlenecked on drawing the perspective transform?
+  - and specifically I think creating the new PerspectiveTransform object on each frame lol
+  - cuz looking at the internals it makes whole new canvas nodes
+- ok yeah so once we remove the perspective shift step, it's back to 20fps
+  - and we won't even need the apply transform to pose
+  - lose about 1fps adding that actually even lol
+- uhhh shit looks like we have to reinstantiate perspective transform for each frame??
+  - ohh I think that makes sense? since it's assuming it's reading from an image
+  - maybe we can patch to accept video
+- hmm even with porting over perspective stuff, it seems to be going a little slow per frame...
+  - I think on the draw there's still some dom node creation which we could speed up?
+  - is this doing some thing for each offset?
+
+
+
+6/28/2024:
+In progress:
+- just doing reference pose detection on the transformed canvas
+  - hmmm this is actually a bit slower though?
+  - oh I think that makes sense as we're no longer doing detection on the detection canvas
+  - so maybe draw onto the detection canvas as well for display
+  - ohh shit but we can't draw in perspective to the detection canvas
+  - so this is why we have to apply transform to the landmark instead?
+
+
+
+6/21/2024:
+In progress:
+- moonboard api investigation:
+    POST https://www.moonboard.com/Video/GetVideos
+    form data: sort=&page=1&pageSize=8&group=&filter=Grade~eq~'6B%2B'
+  - not sure if we need auth on this?
+- fix pose perspective
+  - make separate canvas to have perspective-shifted pose?
+  - orrr, could we even just calculate the pose transform ourself and then just draw that?
+  - and skip transforming the canvas
+
+
+
+6/19/2024:
+In progress:
+- TODO: add pose detection (mediapipe vision npm package. has TS support! thank god)
+- do searching from moonboard video database
+
+some performance investigations:
+- hooked up mediapipe and it works pretty much first try!
+- FPS with just copying image onto canvas is hella fast: 60fps which is basically just what the video was taken at
+- FPS with pose detection drops to about 10fps
+- can GPU make it faster?
+- alright so switched to GPU delegation to a detection canvas (it looks like it just needs the WebGL2 rendering context to activate the GPU or something?)
+- but yeah then just rendered the detected landmark using the normal 2d context for drawing utils and it still worked
+- and best part is we got free 2x fps speedup! went up to 20fps
+
+
+
+6/16/2024:
+In progress:
+
+Done:
+- making video scrubber work
+  - adding scrubber range input
+  - adding event listeners to render frames
+- updating boundary selection flow
+- port over transform calculation
+- add perspectivets for rendering perspective transformations on canvas
+- doing a shit ton of patches to make that shit work
+
+
+
+6/15/2024:
+In progress:
+- starting svelte components
+- Layout
+  - 
+
+Svelte notes:
+- the unit for reactivity is variables
+- the catalyst for reactivity is reassignment of state variables
+- $ reactive statements are kinda like effects?
+  - they get ran if any of the variables they depend on are reassigned
+  - basically like useEffect and its dependencies
+- stores: like context in React
+  - store values can be referenced by prefixing their variables with $ actually!
+  - can directly read/assign to these $variables
+
+
+
+6/13/2024:
+In progress:
+- new Svelte app?
+- start doing state variables and stuff
+- select points flow
+- canvas perspective
+
+
+
+6/11/2024:
+In progress:
+- select points flow
+- can we get the video processing to be more performant?
+  - multithreading?
+  - GPU?
+  - can we lower the onseek time?
+- canvas perspective
+- maybe start actual app setup. will probably want to transition into an actual framework?
+- oh and also maybe try to get different canvas layers?
+  - since we want the poses to be on different layers so we can superimpose them in the different panels
+
+
+
+6/9/2024:
+In progress:
+- pursue sort of preprocessing step to aid in both performance and video scrubbing:
+  - so the idea is, we load the video at like 30 fps into a frame buffer within a canvas context
+  - during this loading, we also draw the pose detection for each frame
+  - then, after processing, we use a custom video-scrubber component to like detect which frame to display on the fly
+    - and that should be much faster than doing it live
+
+Done:
+- tested preprocessing and scrubbing with good results.
+  - this may be the way we want to go, but it does take a while to preprocess
+
+
+
+6/8/2024:
+In progress:
+- test video upload and pose detection flow
+  - we want to precompute all the poses for the video?
+  - play video and run detect video on each frame
+- webapp version
+  - video upload flow
+  - select video flow
+  - select points flow
+  - mediapipe detection
+  - drawing videos and pose references using canvas
+
+Done:
+- video upload and manipulation
+- prelim testing w JS mediapipe library
+  - prob want to use heavy model for best accuracy
+
+
+
+6/6/2024:
+In progress:
+- start web app version:
+  - start with mediapipe web impl tutorial
+  - ipad width, landscape
+  - side-by-side video playback
+    - video.js playback
+  - upload your beta video, select moonboard points
+  - select reference beta video, select moonboard points
+  - run ffmpeg on reference beta video to transform it to fit the same frame
+    - ffmpeg.wasm?
+    - maybe too slow
+    - html5 video + canvas
+  - run pose detection on both videos
+    - mediapipe
+  - overlay poses (using canvas?)
+    - mediapipe
+
+
+
+6/4/2024:
+In progress:
+ffmpeg filters:
+- adding border box: pad
+- cutting video: -ss
+- perspective of course
+
+
+
+5/28/2024:
+In progress:
+- ffmpeg filters
+- mediapipe web implementation? can leverage OpenGL ES on Android/Linux, and Metal on iOS?
+- video side-by-side mode
+  - using scrubbers for each video to sync beta videos
+- video texture mapping to align boards
+- overlay poses between videos
+
+- we know mapping of source -> dest moonboard corner points
+- then, using that linear interpolation, calculate the coordinates of the video corner points
+- finally, apply ffmpeg perspective filter
+
+sample flow:
+1. select a problem, choose a reference beta video
+  a. can we store on some server the video and pose detected positions? and then do overlay with the pose jsons?
+  b. should also already have alignment points defined
+2. upload user beta video
+3. select video alignment points
+4. align videos
+  a. might want to do this server-side with ffmpeg
+5. do pose detection on user beta video
+6. display videos with overlays
+
+
+
+5/22/2024:
+In progress:
+- mediapipe implementation with some sample videos
+- testing different CV libraries for rock climbing poses
+- openpose, openpifpaf, mediapipe
+	- two examples of previous work that I've seen seem to use mediapipe
+
+Done:
+- tested a couple different implementations using the mediapipe python API
+- actually the legacy solutions API seemed to perform the best, so that was weird?
+- lowkey switching up the color scheme to kinda help I think increase contrast between the person and the moonboard background might be something helpful?
+- there's still a lot of stuttering kinda stuff and flickering that makes it look kinda wonky sometimes, and the model also doesn't deal with the occlusion and hidden limbs well
+  - In the problem I tested there's often moments where an arm or leg is occluded cuz of like drop knees or just twisting hips/whatever, and the limb detection kinda freaks out in those moments
+- maybe want to see if a different model can do a better job handling that
+- also maybe want to see what the deal with the legacy solutions API is? is that an old model or what?
+- also discovered that the video mode is indeed better for videos lmao
+  - I didn't realize but I guess it makes sense
+  - my intuition at first was that the image mode might spend more time on each frame, while the video mode was doing some type of interpolation/trying to go faster to increase throughput
+  - but I think the video mode throughput is the same, and it just has the added benefit of seeeing the before and after frames and that helps smoothen out the posts throughout movements
+  - just doing images frame-by-frame makes it suuuper stuttery and jerky as they don't have context of the overall movement over time
+- overall pretty happy with progress today, but I think we still need to look for some improvements on the model detection
+
+Mediapipe:
+- this shit looks hella pop, and is supported by lots of google research
+- have web solution which I'm thinking of trying out (although maybe python for easier prototyping?)
+
+OpenPose notes:
+- uhh alright so spent like two hours trying to set up all these nvidia drivers and cuda shit, and it seems to be kinda working? but apparently mediapipe kinda just pops openpose?
