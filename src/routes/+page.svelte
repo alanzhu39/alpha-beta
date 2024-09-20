@@ -36,9 +36,9 @@
         <InfoIcon height="25px" />
       </button>
       <!-- TODO: settings click -->
-      <button class="icon-button">
+      <!-- <button class="icon-button">
         <SettingsIcon height="30px" />
-      </button>
+      </button> -->
     </div>
   </h1>
   {#if isModalOpen}
