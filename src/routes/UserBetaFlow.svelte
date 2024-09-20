@@ -1,7 +1,7 @@
 <script lang="ts">
   import SelectBoundary from './SelectBoundary.svelte';
-  import VideoScrubber from './VideoScrubber.svelte';
   import VideoUpload from './VideoUpload.svelte';
+  import VideoViewer from './VideoViewer.svelte';
   import { userPerspective, type Coordinate } from './stores';
 
   const STEPS = {
@@ -24,7 +24,11 @@
     $userPerspective = [corners[0], corners[1], corners[2], corners[3]];
   };
 
-  const onScrubberBack = () => {
+  const onBoundaryBack = () => {
+    currentStep = STEPS.VIDEO_UPLOAD;
+  };
+
+  const onViewerBack = () => {
     currentStep = STEPS.SELECT_BOUNDARY;
     corners = [];
   };
@@ -32,18 +36,23 @@
 
 <div class="container">
   {#if currentStep === STEPS.VIDEO_UPLOAD}
-    <VideoUpload bind:videoSrc nextStep={onVideoUpload} />
+    <VideoUpload bind:videoSrc nextStep={onVideoUpload} uploadButtonText="Upload your video" />
   {/if}
   {#if currentStep === STEPS.SELECT_BOUNDARY}
-    <SelectBoundary {videoSrc} bind:corners nextStep={onSelectedBoundary} />
+    <SelectBoundary
+      {videoSrc}
+      bind:corners
+      backStep={onBoundaryBack}
+      nextStep={onSelectedBoundary}
+    />
   {/if}
   {#if currentStep === STEPS.DISPLAY}
-    <VideoScrubber {videoSrc} backStep={onScrubberBack} />
+    <VideoViewer {videoSrc} backStep={onViewerBack} />
   {/if}
 </div>
 
 <style>
   .container {
-    background-color: plum;
+    border-right: 2px solid var(--background-color-gray);
   }
 </style>

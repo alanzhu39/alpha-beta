@@ -5,10 +5,7 @@ TODO:
 - selecting timestamps in the video to sync, since if we're overlaying, different moves might take different times in different betas. so basically allowing to select frame ranges in the base and the overlaid videos to properly sync up the comparisons
 
 - prioritization:
-  - allow instagram embed links
-  - ipad testing
   - make designs prettier
-  - synchronize the pose displays better
   - improve boundary selection process
     - maybe can play around with overlays?
   - add staging deployment setup
@@ -22,15 +19,104 @@ TODO:
   - improve code quality
 
 - done:
+  - allow instagram embed links
+  - ipad testing
+    - also fixed some mobile bugs (eg. stuttering, performance issues)
+    - these are working ok for now, but could probably try to make it even smoother in the future
+  - synchronize the pose displays better
   - improve perspective transform display performance:
     - switched to glfx implementation
     - PR: https://github.com/alanzhu39/alpha-beta/pull/1
 
 
+9/19/2024
+In progress:
+- design improvements
+  - add in settings modal
+    - model selection: light, full, heavy
+    - pose colors
+
+Done:
+- design improvements
+  - add in instructions modal that's active when a user first enters the page
+  - upload/submit url button loading states
+    - also error states
+
+
+
+9/16/2024:
+In progress:
+- design improvements
+  - update video viewer page with new scrubber component, and make things align with color palette
+    - for some reason getting some lag when we seek while the video is playing. bookmarking this to solve later
+  - add in instructions modal that's active when a user first enters the page
+    - working on this
+  - add in settings modal
+    - think we will have info icon and settings icon at the bottom right
+
+Done:
+- design improvements
+  - update video viewer page with new scrubber component, and make things align with color palette
+    - using new colors for poses
+    - added play/pause icons
+  - back buttons, todos
+
+
+
+9/15/2024:
+In progress:
+- design improvements
+  - update video viewer page with new scrubber component, and make things align with color palette
+  - back buttons, todos
+  - add in instructions modal that's active when a user first enters the page
+    - working on this
+  - add in settings modal
+    - think we will have info icon and settings icon at the bottom right
+
+Modal instructions:
+- Welcome to AlphaBeta! A platform to help you compare your Moonboard beta with others'.
+  - AlphaBeta aligns two Moonboard beta videos and aligns body positioning data over them to help you compare
+    your beta against others' down to the inch.
+- How it works:
+  1. First, upload a video of your beta and a video of the beta you want to compare against.
+    You can also use beta videos from Instagram using the post URL.
+  2. Next, select the boundaries of the Moonboards in both videos.
+    This is used to align the two videos so that the Moonboards in both videos overlap exactly.
+  3. Finally, the videos will pop up side-by-side, with pose detection overlaid on top of them.
+    Scrub within the two videos to compare your beta on different parts of the climb!
+- Happy sending!
+- disclaimer: not affiliated with moonboard in any way
+- link to my github
+- ooh maybe dropdowns with screenshots? or even just the screenshot there, so they have an idea of what to look for
+
+Done:
+- design improvements
+  - boundary box selection
+    - actually draw the box
+    - how is the touch-hold-drag performance on ipad?
+      - it's good!, if we do `e.preventDefault` on some of the touch events
+  - customizing upload buttons on mobile so they don't show the default buttons and stuff
+  - make font cooler
+    - using inter/sans-serif for now, looks p clean imo
+  - add space at bottom of screen for the ipad gesture bar (in safari)
+    - done
+  - put in actual designs (default dark mode?)
+    - added color palette, based on moonboard app, and working on making things prettier like the scrubber
+
+
+
 9/3/2024:
 In progress:
+
+Done:
 - ios bugfixes
   - fix video stuttering on ios (this happens on my phone too)
+    - from overloading the video rendering or something
+    - so like playing from the video itself was even lagging
+    - throttling `requestAnimationFrame` on mobile solved this
+  - fixed videos not playing (from webgl context getting lost)
+    - also added some fallback logic to retry/recreate webgl contexts on failure
+  - some qol changes for mobile dev, also setting screen width dynamically to respond to changing viewport sizes on mobile
 
 
 

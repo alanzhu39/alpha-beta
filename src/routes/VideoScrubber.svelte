@@ -1,443 +1,165 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import * as fx from 'glfx-es6';
-  import type { GlfxCanvas, GlfxTexture, GlfxCoordinates } from 'glfx-es6';
-  import {
-    DrawingUtils,
-    FilesetResolver,
-    PoseLandmarker,
-    type NormalizedLandmark
-  } from '@mediapipe/tasks-vision';
-  import {
-    isMobile,
-    referencePerspective,
-    referencePose,
-    referencePoseColor,
-    userCanvasDimensions,
-    userPerspective,
-    userPose,
-    userPoseColor
-  } from './stores';
+  import { clamp, timestampFromSeconds } from '$lib/math';
+  import { createEventDispatcher, onMount } from 'svelte';
 
-  export let backStep;
-  export let videoSrc: string;
-  export let isReference: boolean = false;
+  export let scrubberPosition: number = 0;
+  export let videoDuration: number = 0;
 
-  let videoRef: HTMLVideoElement;
-  let videoDuration: number;
-  let rangeRef: HTMLInputElement;
-  let isPlaying = false;
-  let fps: number = 0;
+  let canvasRef: HTMLCanvasElement;
+  let currPosition: number = 0;
+  let isDrawing: boolean = false;
 
-  // Canvas with the WebGL context used by mediapipe for
-  // doing pose detection in GPU mode
-  let detectionCanvasRef: HTMLCanvasElement;
+  const keyboardScrubOffset = 0.001;
+  const scrubberBarWidth = 5;
+  const inlinePadding = 10;
+  let scrubberWidth: number;
 
-  // Canvas for drawing the user and reference poses
-  let displayCanvasRef: HTMLCanvasElement;
+  $: {
+    currPosition = scrubberPosition;
+    if (canvasRef) drawScrubber();
+  }
 
-  // Canvas for drawing the current video frame
-  // Controlled by glfx
-  let frameCanvasRef: HTMLCanvasElement;
+  const dispatch = createEventDispatcher<{ scrub: number }>();
 
-  let poseLandmarker: PoseLandmarker;
-  let referenceTransform: boolean = false;
-  let glfxCanvas: GlfxCanvas;
-  let glfxTexture: GlfxTexture;
-
-  const setupPoseLandmarker = async (useGpu: boolean = false) => {
-    // Create pose landmarker
-    const vision = await FilesetResolver.forVisionTasks('@mediapipe/tasks-vision/wasm');
-    poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
-      baseOptions: {
-        /* Disabling GPU pose detection for now on iPad since it's exploding the WebGL context */
-        delegate: useGpu ? 'GPU' : 'CPU',
-        modelAssetPath:
-          // 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task'
-          'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task'
-        // 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task'
-      },
-      canvas: useGpu ? detectionCanvasRef : undefined,
-      numPoses: 1,
-      runningMode: 'VIDEO'
-    });
-
-    if (useGpu) {
-      detectionCanvasRef.addEventListener('webglcontextlost', () => {
-        alert('Detection canvas WebGL context lost');
-        setupPoseLandmarker(false);
-      });
+  onMount(() => {
+    if (canvasRef) {
+      canvasRef.width = canvasRef.offsetWidth;
+      canvasRef.height = canvasRef.offsetHeight;
+      scrubberWidth = canvasRef.width - 2 * inlinePadding;
+      drawScrubber();
     }
-  };
-
-  const setupGlfx = () => {
-    // Create glfx canvas for drawing perspective shift in reference video
-    glfxCanvas = fx.canvas();
-    glfxCanvas.className = frameCanvasRef.className;
-    frameCanvasRef.replaceWith(glfxCanvas);
-    frameCanvasRef = glfxCanvas;
-
-    glfxTexture = glfxCanvas.texture(videoRef);
-
-    glfxCanvas.addEventListener('webglcontextlost', () => {
-      alert('Glfx canvas WebGL context lost');
-      setupGlfx();
-    });
-  };
-
-  onMount(async () => {
-    await setupPoseLandmarker(true);
-
-    let canvasWidth = videoRef.offsetWidth;
-    let canvasHeight = videoRef.offsetHeight;
-
-    if (isReference) {
-      setupGlfx();
-
-      if ($userCanvasDimensions) {
-        [canvasWidth, canvasHeight] = $userCanvasDimensions;
-      }
-    } else {
-      // If drawing the user video, then set the canvas dimensions store
-      $userCanvasDimensions = [videoRef.offsetWidth, videoRef.offsetHeight];
-    }
-
-    // Set canvas dimensions
-    setCanvasDimensions(canvasWidth, canvasHeight);
-
-    // Mute video
-    videoRef.muted = true;
-
-    // Draw the first frame of the video
-    videoRef.currentTime = 0;
   });
 
-  $: {
-    if (rangeRef && videoDuration) {
-      rangeRef.max = videoDuration.toString();
-    }
-  }
-
-  $: referenceTransform = !!$referencePerspective && !!$userPerspective;
-
-  $: {
-    if (
-      // If this is the reference video, the video isn't playing, and the user pose is updated, redraw the landmarks
-      (isReference && $userPose && !isPlaying && displayCanvasRef) ||
-      // If this is the user video, the video isn't playing, and the reference pose is updated, redraw the landmarks
-      (!isReference && $referencePose && !isPlaying && displayCanvasRef)
-    ) {
-      redrawLandmarks();
-    }
-  }
-
-  // Reactive statement for setting the canvas dimensions
-  $: {
-    if ($userCanvasDimensions && displayCanvasRef && frameCanvasRef) {
-      setCanvasDimensions(...$userCanvasDimensions);
-      videoRef.currentTime = 0;
-    }
-  }
-
-  const setCanvasDimensions = (canvasWidth: number, canvasHeight: number) => {
-    displayCanvasRef.width = canvasWidth;
-    displayCanvasRef.height = canvasHeight;
-    displayCanvasRef.style.width = `${canvasWidth}px`;
-    displayCanvasRef.style.height = `${canvasHeight}px`;
-
-    frameCanvasRef.width = canvasWidth;
-    frameCanvasRef.height = canvasHeight;
-    frameCanvasRef.style.width = `${canvasWidth}px`;
-    frameCanvasRef.style.height = `${canvasHeight}px`;
-  };
-
-  const onPlayClick = () => {
-    isPlaying = true;
-    videoRef.play();
-  };
-
-  const onPauseClick = () => {
-    isPlaying = false;
-    videoRef.pause();
-  };
-
-  const drawFrame = (
-    poseContext: CanvasRenderingContext2D,
-    frameWidth: number,
-    frameHeight: number,
-    detectPose: boolean = true
-  ) => {
-    if (isReference) {
-      drawFrameAsReference(poseContext, frameWidth, frameHeight, detectPose);
+  const getOffsetFromEvent = (e: MouseEvent | TouchEvent) => {
+    const canvasRect = canvasRef.getBoundingClientRect();
+    if (e instanceof MouseEvent) {
+      currPosition = clamp((e.clientX - canvasRect.left - inlinePadding) / scrubberWidth, 0, 1);
     } else {
-      drawFrameAsUser(poseContext, frameWidth, frameHeight, detectPose);
+      currPosition = clamp(
+        (e.touches[0].clientX - canvasRect.left - inlinePadding) / scrubberWidth,
+        0,
+        1
+      );
+      e.preventDefault();
     }
   };
 
-  const drawFrameAsUser = (
-    poseContext: CanvasRenderingContext2D,
-    frameWidth: number,
-    frameHeight: number,
-    detectPose: boolean
-  ) => {
-    const frameContext = frameCanvasRef.getContext('2d');
-    if (!frameContext) return;
-
-    // Draw the current frame
-    frameContext.drawImage(videoRef, 0, 0, frameWidth, frameHeight);
-
-    poseContext.clearRect(0, 0, frameWidth, frameHeight);
-
-    // Draw overlay reference pose
-    const drawingUtils = new DrawingUtils(poseContext);
-    drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
-
-    // Detect pose
-    if (detectPose) {
-      poseLandmarker.detectForVideo(videoRef, performance.now(), (result) => {
-        poseContext.save();
-        for (const landmark of result.landmarks) {
-          // Draw user pose
-          drawLandmark(drawingUtils, landmark, $userPoseColor);
-
-          // update poseStore
-          $userPose = landmark;
-        }
-        poseContext.restore();
-      });
-    } else {
-      // Just draw user pose
-      drawLandmark(drawingUtils, $userPose, $userPoseColor);
-    }
-  };
-
-  const drawFrameAsReference = (
-    poseContext: CanvasRenderingContext2D,
-    frameWidth: number,
-    frameHeight: number,
-    detectPose: boolean
-  ) => {
-    glfxTexture.loadContentsOf(videoRef);
-    const frameContext: GlfxCanvas = glfxCanvas.draw(glfxTexture);
-
-    if (referenceTransform) {
-      // Draw frame with perspective shift
-      const videoWidth = videoRef.videoWidth;
-      const videoHeight = videoRef.videoHeight;
-
-      // Shift reference perspective into the user perspective
-      const before = $referencePerspective.flatMap(([x, y]) => [
-        x * videoWidth,
-        y * videoHeight
-      ]) as GlfxCoordinates;
-      const after = $userPerspective.flatMap(([x, y]) => [
-        x * videoWidth,
-        y * videoHeight
-      ]) as GlfxCoordinates;
-
-      frameContext.perspective(before, after).update();
-    } else {
-      // Draw frame without perspective shift
-      frameContext.update();
-    }
-
-    poseContext.clearRect(0, 0, frameWidth, frameHeight);
-
-    // Draw overlay user pose
-    const drawingUtils = new DrawingUtils(poseContext);
-    drawLandmark(drawingUtils, $userPose, $userPoseColor);
-
-    // Detect pose
-    if (detectPose) {
-      poseLandmarker.detectForVideo(frameCanvasRef, performance.now(), (result) => {
-        for (const landmark of result.landmarks) {
-          // Draw reference pose
-          drawLandmark(drawingUtils, landmark, $referencePoseColor);
-
-          // update poseStore
-          $referencePose = landmark;
-        }
-      });
-    } else {
-      // Just draw reference pose
-      drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
-    }
-  };
-
-  const drawLandmark = (
-    drawingUtils: DrawingUtils,
-    landmark: NormalizedLandmark[],
-    color: string
-  ) => {
-    drawingUtils.drawLandmarks(landmark, {
-      lineWidth: 2,
-      radius: 2,
-      color
-    });
-    drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS, {
-      lineWidth: 2,
-      color
-    });
-  };
-
-  const redrawLandmarks = () => {
-    const context = displayCanvasRef.getContext('2d');
+  const drawScrubber = () => {
+    const context = canvasRef.getContext('2d');
     if (!context) return;
+    context.clearRect(0, 0, canvasRef.width, canvasRef.height);
 
-    context.clearRect(0, 0, displayCanvasRef.width, displayCanvasRef.height);
-
-    const drawingUtils = new DrawingUtils(context);
-    drawLandmark(drawingUtils, $userPose, $userPoseColor);
-    drawLandmark(drawingUtils, $referencePose, $referencePoseColor);
+    // Draw scrubber bar
+    context.beginPath();
+    context.roundRect(
+      inlinePadding + currPosition * scrubberWidth - scrubberBarWidth / 2,
+      0,
+      scrubberBarWidth,
+      canvasRef.height,
+      10
+    );
+    context.fillStyle = '#e6e6e6';
+    context.fill();
   };
 
-  const onInput = () => {
-    videoRef.currentTime = parseFloat(rangeRef.value);
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') {
+      currPosition = Math.max(0, currPosition - keyboardScrubOffset);
+      drawScrubber();
+      dispatch('scrub', currPosition);
+    } else if (e.key === 'ArrowRight') {
+      currPosition = Math.min(1, currPosition + keyboardScrubOffset);
+      drawScrubber();
+      dispatch('scrub', currPosition);
+    }
   };
 
-  const onEnded = () => {
-    isPlaying = false;
-  };
-
-  const onSeeked = () => {
-    const context = displayCanvasRef.getContext('2d');
-    if (!context) return;
-
-    drawFrame(context, displayCanvasRef.offsetWidth, displayCanvasRef.offsetHeight);
-  };
-
-  const onPlaying = () => {
-    const context = displayCanvasRef.getContext('2d');
-    if (!context) return;
-
-    const canvasWidth = displayCanvasRef.offsetWidth;
-    const canvasHeight = displayCanvasRef.offsetHeight;
-
-    const start = performance.now();
-
-    function step(count: number) {
-      if (!isPlaying || videoRef.ended || !context) {
-        console.log(`frames: ${count}`);
-        console.log(`time: ${performance.now() - start}ms`);
-        fps = count / ((performance.now() - start) / 1000);
-        console.log(`fps: ${fps}`);
-        return;
-      }
-
-      drawFrame(context, canvasWidth, canvasHeight);
-
-      if ($isMobile) {
-        // Throttling here seems to help out with video stuttering on mobile devices
-        setTimeout(() => requestAnimationFrame(() => step(count + 1)), 1000 / 60);
-      } else {
-        requestAnimationFrame(() => step(count + 1));
-      }
+  const onCanvasDown = (e: MouseEvent | TouchEvent) => {
+    function step() {
+      if (!isDrawing) return;
+      drawScrubber();
+      requestAnimationFrame(step);
     }
 
-    requestAnimationFrame(() => step(0));
+    isDrawing = true;
+    getOffsetFromEvent(e);
+    dispatch('scrub', currPosition);
+    requestAnimationFrame(step);
   };
 
-  const onTimeUpdate = () => {
-    rangeRef.value = videoRef.currentTime.toString();
+  const onCanvasMove = (e: MouseEvent | TouchEvent) => {
+    if (!isDrawing) return;
+    getOffsetFromEvent(e);
+    dispatch('scrub', currPosition);
+  };
+
+  const onCanvasUp = () => {
+    isDrawing = false;
   };
 </script>
 
-<div class="container">
-  <button class="back-button" on:click={backStep}>Back</button>
-  <div class="video-container">
-    <video
-      class="user-video"
-      muted
-      playsinline
-      crossorigin="anonymous"
-      bind:this={videoRef}
-      bind:duration={videoDuration}
-      on:playing={onPlaying}
-      on:seeked={onSeeked}
-      on:timeupdate={onTimeUpdate}
-      on:ended={onEnded}
-    >
-      <source src={videoSrc} type="video/mp4" />
-    </video>
-    <canvas class="detection-canvas" bind:this={detectionCanvasRef} />
-    <canvas class="frame-canvas" bind:this={frameCanvasRef} />
-    <canvas class="display-canvas" bind:this={displayCanvasRef} />
+<div class="wrapper">
+  <div class="scrubber-container">
+    <!-- svelte-ignore a11y-positive-tabindex "Setting non-zero tabindex to make the scrubber canvas focusable" -->
+    <canvas
+      class="scrubber"
+      bind:this={canvasRef}
+      on:keydown={onKeyDown}
+      on:mousedown={onCanvasDown}
+      on:mousemove={onCanvasMove}
+      on:mouseup={onCanvasUp}
+      on:mouseleave={onCanvasUp}
+      on:touchstart={onCanvasDown}
+      on:touchmove={onCanvasMove}
+      on:touchend={onCanvasUp}
+      on:touchcancel={onCanvasUp}
+      tabindex="1"
+    />
+    <div class="background" />
   </div>
-  <div class="controls-container">
-    {#if isPlaying}
-      <button on:click={onPauseClick}>Pause</button>
-    {:else}
-      <button on:click={onPlayClick}>Play</button>
-    {/if}
-    <input type="range" step="0.03" value="0" bind:this={rangeRef} on:input={onInput} />
-    <!-- TODO: remove this in design updates -->
-    {fps}
-  </div>
+  <p class="timestamp">
+    {timestampFromSeconds(currPosition * videoDuration)}/{timestampFromSeconds(videoDuration)}
+  </p>
 </div>
 
-<style lang="scss">
-  .container {
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) auto;
-    height: 100%;
+<style>
+  .wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .timestamp {
+    margin: 0;
+    font-size: 13px;
+  }
+
+  .scrubber-container {
+    flex-grow: 1;
     position: relative;
+    height: 30px;
   }
 
-  .back-button {
+  .background {
+    box-sizing: border-box;
+    margin: 3px 0;
+    height: calc(100% - 6px);
+    border-radius: 7px;
+    background-color: var(--background-color-gray);
+    border: 1px solid var(--text-color-white);
+  }
+
+  .scrubber {
+    display: block;
     position: absolute;
-    z-index: 10;
-    cursor: pointer;
-  }
-
-  .video-container {
-    position: relative;
-    justify-self: center;
-    align-self: stretch;
-    min-width: 0;
-    min-height: 0;
-  }
-
-  .user-video {
-    max-width: 100%;
-    max-height: 100%;
-    visibility: hidden;
-  }
-
-  %canvas {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-  }
+    cursor: pointer;
 
-  .detection-canvas {
-    @extend %canvas;
-
-    z-index: -1;
-  }
-
-  .frame-canvas {
-    @extend %canvas;
-
-    z-index: 1;
-    background-color: black;
-  }
-
-  .display-canvas {
-    @extend %canvas;
-
-    z-index: 2;
-    background-color: transparent;
-  }
-
-  .controls-container {
-    padding: 10px;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 10px;
-    text-align: center;
-    align-items: center;
+    &:focus-visible {
+      outline: none;
+    }
   }
 </style>
