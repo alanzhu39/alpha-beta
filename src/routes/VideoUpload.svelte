@@ -5,7 +5,7 @@
 
   let isLoading = false;
   let inputError: string | null = null;
-  let postUrlInput = '';
+  let urlInput = '';
 
   const onUpload = (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -19,16 +19,22 @@
 
   const onSubmitUrl = async () => {
     try {
-      // process postUrlInput to extract post shortcode
-      const { pathname } = new URL(postUrlInput);
-      const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
-      const shortcode = pathnameSegments[pathnameSegments.length - 1];
+      const { hostname, pathname } = new URL(urlInput);
+      if (hostname.includes('youtube.com')) {
+        // TODO: youtube
+      } else if (hostname.includes('instagram.com')) {
+        // process postUrlInput to extract post shortcode
+        const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
+        const shortcode = pathnameSegments[pathnameSegments.length - 1];
 
-      isLoading = true;
-      const res = await fetch(`/api/instagram?shortcode=${shortcode}`);
-      isLoading = false;
-      videoSrc = await res.text();
-      nextStep();
+        isLoading = true;
+        const res = await fetch(`/api/instagram?shortcode=${shortcode}`);
+        isLoading = false;
+        videoSrc = await res.text();
+        nextStep();
+      } else {
+        inputError = 'URL not supported. Please try again!';
+      }
     } catch (err) {
       console.error(err);
       inputError = 'Failed to fetch video. Please try again!';
@@ -44,13 +50,8 @@
   or
   <form class="url">
     <label class="url-label" on:submit={onSubmitUrl}>
-      Enter an Instagram post URL
-      <input
-        class="url-input"
-        placeholder="Instagram post URL"
-        bind:value={postUrlInput}
-        on:input={onInput}
-      />
+      Enter an Instagram post URL or YouTube video URL
+      <input class="url-input" placeholder="Enter a URL" bind:value={urlInput} on:input={onInput} />
       {#if inputError}<span class="error">{inputError}</span>{/if}
     </label>
     <button

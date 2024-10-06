@@ -29,8 +29,9 @@
     <h2>How It Works</h2>
     <h4>Step 1: Upload Videos</h4>
     <p>
-      Upload your own beta video and a comparison beta video. Or, use beta videos from Instagram by
-      providing the post URL.
+      <!-- TODO: youtube -->
+      Upload your own beta video and a comparison beta video. Or, use beta videos from Instagram by providing
+      the post URL.
       <details bind:open={detailsOpen.videoUpload}>
         <summary>{detailsOpen.videoUpload ? 'Hide' : 'Show'} screenshot</summary>
         <img alt="Screenshot of video upload page" src={VideoUploadScreenshot} />

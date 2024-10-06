@@ -17,7 +17,7 @@ export async function GET({ url }: { url: URL }) {
 
   // Call Python script
   try {
-    const videoUrl = execSync(`python3 python/post_to_src.py ${sanitizedShortcode}`);
+    const videoUrl = execSync(`python3 python/instagram_to_src.py ${sanitizedShortcode}`);
     return new Response(videoUrl);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
