@@ -19,11 +19,20 @@
 
   const onSubmitUrl = async () => {
     try {
-      const { hostname, pathname } = new URL(urlInput);
+      const { hostname, pathname, searchParams } = new URL(urlInput);
       if (hostname.includes('youtube.com')) {
-        // TODO: youtube
+        // process urlInput to extract video ID
+        const videoId = searchParams.get('v');
+
+        isLoading = true;
+        const res = await fetch(`/api/youtube?id=${videoId}`);
+        // Endpoint might return multiple video URLs
+        const srcList = (await res.text()).split('\n');
+        videoSrc = srcList[0];
+        isLoading = false;
+        nextStep();
       } else if (hostname.includes('instagram.com')) {
-        // process postUrlInput to extract post shortcode
+        // process urlInput to extract post shortcode
         const pathnameSegments = pathname.split('/').filter((segment) => segment.length > 0);
         const shortcode = pathnameSegments[pathnameSegments.length - 1];
 

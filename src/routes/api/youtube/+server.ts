@@ -17,7 +17,8 @@ export async function GET({ url }: { url: URL }) {
 
   // Call Python script
   try {
-    const videoUrl = execSync(`python3 python/youtube_to_src.py ${sanitizedId}`);
+    const videoUrl = execSync(`yt-dlp --print urls ${sanitizedId}`);
+    console.log(videoUrl.toString());
     return new Response(videoUrl);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
