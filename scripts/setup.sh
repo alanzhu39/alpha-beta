@@ -7,6 +7,10 @@ source env/bin/activate
 # Install python dependencies
 pip3 install -r requirements.txt
 
+# Apply patches for instaloader
+patch -p0 < python/patches/instaloadercontext.patch
+patch -p0 < python/patches/structures.patch
+
 # Deactivate venv
 deactivate
 

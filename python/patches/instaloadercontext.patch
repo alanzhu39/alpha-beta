@@ -1,0 +1,11 @@
+--- env/lib/python3.11/site-packages/instaloader/instaloadercontext.py	2024-10-12 17:55:12.136444078 -0700
++++ env/lib/python3.11/site-packages/instaloader/instaloadercontext.py	2024-10-12 17:52:37.688441027 -0700
+@@ -515,7 +515,7 @@
+                 tmpsession.headers['x-instagram-gis'] = x_instagram_gis
+ 
+             resp_json = self.get_json('graphql/query',
+-                                      params={'query_hash': query_hash,
++                                      params={'doc_id': query_hash,
+                                               'variables': variables_json},
+                                       session=tmpsession)
+         if 'status' not in resp_json:
